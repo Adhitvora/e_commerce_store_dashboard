@@ -52,7 +52,7 @@ const Orders = () => {
                             myOrders.map((o, i) => <div className='text-[#d0d2d6]'>
                                 <div className='flex justify-between items-start border-b border-slate-700'>
                                     <div className='py-4 w-[25%] font-medium whitespace-nowrap'>{o._id}</div>
-                                    <div className='py-4 w-[13%]'>${o.price}</div>
+                                    <div className='py-4 w-[13%]'>₹{o.price}</div>
                                     <div className='py-4 w-[18%]'>{o.payment_status}</div>
                                     <div className='py-4 w-[18%]'>{o.delivery_status}</div>
                                     <div className='py-4 w-[18%]'>
@@ -66,7 +66,7 @@ const Orders = () => {
                                     {
                                         o.suborder.map((so, i) => <div className='flex justify-start items-start border-b border-slate-700'>
                                             <div className='py-4 w-[25%] font-medium whitespace-nowrap pl-3'>${so._id}</div>
-                                            <div className='py-4 w-[13%]'>${so.price}</div>
+                                            <div className='py-4 w-[13%]'>₹{so.price}</div>
                                             <div className='py-4 w-[18%]'>{so.payment_status}</div>
                                             <div className='py-4 w-[18%]'>{so.delivery_status}</div>
                                         </div>)
