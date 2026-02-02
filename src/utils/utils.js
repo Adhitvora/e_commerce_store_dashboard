@@ -16,7 +16,7 @@ const mode = process.env.REACT_APP_MODE;
 let app_url, api_url
 
 if (mode === production) {
-    app_url = "https://dashboard-ecommerce-two.vercel.app"
+    app_url = "https://e-commerce-store-dashboard-jet.vercel.app"
     api_url = "https://api-ecommerce-fos4.onrender.com"
 } else {
     app_url = 'http://localhost:3001'
