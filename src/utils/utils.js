@@ -17,7 +17,7 @@ let app_url, api_url
 
 if (mode === production) {
     app_url = "https://e-commerce-store-dashboard-jet.vercel.app"
-    api_url = "https://api-ecommerce-fos4.onrender.com"
+    api_url = " https://e-commerce-store-backend-2rgq.onrender.com"
 } else {
     app_url = 'http://localhost:3001'
     api_url = 'http://localhost:5000'
