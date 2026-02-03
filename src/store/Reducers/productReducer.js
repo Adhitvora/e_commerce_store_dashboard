@@ -78,6 +78,30 @@ export const get_products = createAsyncThunk(
     }
 )
 
+
+export const delete_product = createAsyncThunk(
+    'product/delete_product',
+    async (productId, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.delete(
+                `${api_url}/api/product/delete/${productId}`,
+                config
+            )
+            return fulfillWithValue({ productId, message: data.message })
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+
 export const get_product = createAsyncThunk(
     'product/get_product',
     async (productId, { rejectWithValue, fulfillWithValue, getState }) => {
@@ -149,7 +173,25 @@ export const productReducer = createSlice({
             state.product = payload.product
             state.successMessage = payload.message
         },
+        [delete_product.pending]: (state) => {
+            state.loader = true
+        },
+        [delete_product.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload.error
+        },
+        [delete_product.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload.message
+
+            // remove product from list instantly (no refetch needed)
+            state.products = state.products.filter(
+                p => p._id !== payload.productId
+            )
+        },
     }
+
+
 
 })
 export const { messageClear } = productReducer.actions
