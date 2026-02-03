@@ -225,7 +225,7 @@ const AddProduct = () => {
                                 <span><BsImages /></span>
                                 <span>select image</span>
                             </label>
-                            <input multiple onChange={inmageHandle} className='hidden' type="file" id='image' />
+                            <input multiple onChange={inmageHandle} name="images" className='hidden' type="file" id='image' />
                         </div>
                         <div className='flex'>
                             <button disabled={loader ? true : false} className='bg-blue-500 w-[190px] hover:shadow-blue-500/20 hover:shadow-lg text-white rounded-md px-7 py-2 mb-3'>
