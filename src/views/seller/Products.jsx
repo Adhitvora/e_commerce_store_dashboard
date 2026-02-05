@@ -114,7 +114,7 @@ const Products = () => {
                     scope="row"
                     className="py-1 px-4 font-medium whitespace-nowrap"
                   >
-                    <span>${d.price}</span>
+                    <span>₹{d.price}</span>
                   </td>
                   <td
                     scope="row"
@@ -123,7 +123,7 @@ const Products = () => {
                     {d.discount === 0 ? (
                       <span>no discount</span>
                     ) : (
-                      <span>${d.discount}%</span>
+                      <span>{d.discount}%</span>
                     )}
                   </td>
                   <td

@@ -84,7 +84,7 @@ const Payments = () => {
             <div className='w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-5'>
                 <div className='flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3'>
                     <div className='flex flex-col justify-start items-start text-[#d0d2d6]'>
-                        <h2 className='text-lg font-bold'>${totalAmount}</h2>
+                        <h2 className='text-lg font-bold'>₹{totalAmount}</h2>
                         <span className='text-sm font-normal'>Total Sales</span>
                     </div>
                     <div className='w-[46px] h-[47px] rounded-full bg-[#28c76f1f] flex justify-center items-center text-xl'>
@@ -93,7 +93,7 @@ const Payments = () => {
                 </div>
                 <div className='flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3'>
                     <div className='flex flex-col justify-start items-start text-[#d0d2d6]'>
-                        <h2 className='text-lg font-bold'>${availableAmount}</h2>
+                        <h2 className='text-lg font-bold'>₹{availableAmount}</h2>
                         <span className='text-sm font-normal'>Avaiable Amount</span>
                     </div>
                     <div className='w-[46px] h-[47px] rounded-full bg-[#e000e81f] flex justify-center items-center text-xl'>
@@ -102,7 +102,7 @@ const Payments = () => {
                 </div>
                 <div className='flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3'>
                     <div className='flex flex-col justify-start items-start text-[#d0d2d6]'>
-                        <h2 className='text-lg font-bold'>${withdrowAmount}</h2>
+                        <h2 className='text-lg font-bold'>₹{withdrowAmount}</h2>
                         <span className='text-sm font-normal'>Withdrawal Amount</span>
                     </div>
                     <div className='w-[46px] h-[47px] rounded-full bg-[#00cfe81f] flex justify-center items-center text-xl'>
@@ -111,7 +111,7 @@ const Payments = () => {
                 </div>
                 <div className='flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3'>
                     <div className='flex flex-col justify-start items-start text-[#d0d2d6]'>
-                        <h2 className='text-lg font-bold'>${pendingAmount}</h2>
+                        <h2 className='text-lg font-bold'>₹{pendingAmount}</h2>
                         <span className='text-sm font-normal'>Pending amount</span>
                     </div>
                     <div className='w-[46px] h-[47px] rounded-full bg-[#7367f01f] flex justify-center items-center text-xl'>
