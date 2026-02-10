@@ -4,6 +4,7 @@ import { FiUsers } from 'react-icons/fi'
 import { CiChat1 } from 'react-icons/ci'
 import { BsCurrencyDollar, BsChat } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
+import { MdOutlineInventory2 } from "react-icons/md"
 export const allNav = [
     {
         id: 1,
@@ -53,6 +54,13 @@ export const allNav = [
         icon: <BiLoaderCircle />,
         role: 'admin',
         path: '/admin/dashboard/sellers-request'
+    },
+    {
+        id: 7,
+        title: 'Product List',
+        icon: <MdOutlineInventory2 />,
+        role: 'admin',
+        path: '/admin/products-approval'
     },
     {
         id: 8,

@@ -120,7 +120,69 @@ export const get_product = createAsyncThunk(
     }
 )
 
+export const approve_product = createAsyncThunk(
+    'product/approve_product',
+    async (productId, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.put(
+                `${api_url}/api/product/approve/${productId}`,
+                {},
+                config
+            )
+            return fulfillWithValue({ productId, message: data.message })
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
 
+export const reject_product = createAsyncThunk(
+    'product/reject_product',
+    async (productId, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.put(
+                `${api_url}/api/product/reject/${productId}`,
+                {},
+                config
+            )
+            return fulfillWithValue({ productId, message: data.message })
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+export const admin_get_products = createAsyncThunk(
+    'product/admin_get_products',
+    async ({ parPage, page, searchValue }, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.get(
+                `${api_url}/api/admin/products-get?page=${page}&&searchValue=${searchValue}&&parPage=${parPage}`,
+                config
+            )
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
 
 export const productReducer = createSlice({
     name: 'product',
@@ -188,6 +250,44 @@ export const productReducer = createSlice({
             state.products = state.products.filter(
                 p => p._id !== payload.productId
             )
+        },
+        [approve_product.pending]: (state) => {
+            state.loader = true
+        },
+        [approve_product.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload.message
+            // optional: status update without refetch
+            state.products = state.products.map(p =>
+                p._id === payload.productId
+                    ? { ...p, approval_status: 'approved' }
+                    : p
+            )
+        },
+        [approve_product.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error
+        },
+
+        [reject_product.pending]: (state) => {
+            state.loader = true
+        },
+        [reject_product.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload.message
+            state.products = state.products.map(p =>
+                p._id === payload.productId
+                    ? { ...p, approval_status: 'rejected' }
+                    : p
+            )
+        },
+        [reject_product.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error
+        },
+        [admin_get_products.fulfilled]: (state, { payload }) => {
+            state.totalProduct = payload.totalProduct
+            state.products = payload.products
         },
     }
 
