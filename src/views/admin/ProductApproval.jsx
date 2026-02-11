@@ -7,11 +7,15 @@ import {
   admin_get_products,
   approve_product,
   reject_product,
+  get_product_full_details,
 } from "../../store/Reducers/productReducer";
+import ProductDetailsModal from "../components/ProductDetailsModal";
 
 const ProductApproval = () => {
   const dispatch = useDispatch();
-  const { products, totalProduct } = useSelector((state) => state.product);
+  const { products, product, totalProduct } = useSelector(
+    (state) => state.product,
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -37,6 +41,13 @@ const ProductApproval = () => {
     if (window.confirm("Reject this product?")) {
       dispatch(reject_product(id));
     }
+  };
+
+  const [showModal, setShowModal] = useState(false);
+
+  const viewHandler = (id) => {
+    dispatch(get_product_full_details(id));
+    setShowModal(true);
   };
 
   return (
@@ -133,6 +144,7 @@ const ProductApproval = () => {
                       )}
 
                       <button
+                        onClick={() => viewHandler(d._id)}
                         className="p-[6px] bg-blue-500 rounded"
                         title="View"
                       >
@@ -156,6 +168,15 @@ const ProductApproval = () => {
               showItem={4}
             />
           </div>
+        )}
+
+        {showModal && (
+          <ProductDetailsModal
+            product={product}
+            close={() => setShowModal(false)}
+            approveHandler={approveHandler}
+            rejectHandler={rejectHandler}
+          />
         )}
       </div>
     </div>

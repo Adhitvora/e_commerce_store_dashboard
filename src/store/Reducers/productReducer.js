@@ -174,7 +174,7 @@ export const admin_get_products = createAsyncThunk(
         }
         try {
             const { data } = await axios.get(
-                `${api_url}/api/admin/products-get?page=${page}&&searchValue=${searchValue}&&parPage=${parPage}`,
+                `${api_url}/api/admin/products-get?page=1&&searchValue=${searchValue}&&parPage=${parPage}`,
                 config
             )
             return fulfillWithValue(data)
@@ -183,6 +183,27 @@ export const admin_get_products = createAsyncThunk(
         }
     }
 )
+
+export const get_product_full_details = createAsyncThunk(
+    'product/get_product_full_details',
+    async (productId, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token;
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        };
+        try {
+            const { data } = await axios.get(
+                `${api_url}/api/admin/product-details/${productId}`,
+                config
+            );
+            return fulfillWithValue(data.product);
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 
 export const productReducer = createSlice({
     name: 'product',
@@ -289,7 +310,11 @@ export const productReducer = createSlice({
             state.totalProduct = payload.totalProduct
             state.products = payload.products
         },
+        [get_product_full_details.fulfilled]: (state, { payload }) => {
+            state.product = payload;
+        },
     }
+
 
 
 
