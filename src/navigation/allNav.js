@@ -67,7 +67,7 @@ export const allNav = [
         title: 'Chat Seller',
         icon: <CiChat1 />,
         role: 'admin',
-        path: '/admin/dashboard/chat-sellers'
+        path: '/admin/dashboard/chat'
     },
     {
         id: 9,
@@ -119,13 +119,13 @@ export const allNav = [
         role: 'seller',
         path: '/seller/dashboard/payments'
     },
-    {
-        id: 15,
-        title: 'Chat Customer',
-        icon: <BsChat />,
-        role: 'seller',
-        path: '/seller/dashboard/chat-customer'
-    },
+    // {
+    //     id: 15,
+    //     title: 'Chat Customer',
+    //     icon: <BsChat />,
+    //     role: 'seller',
+    //     path: '/seller/dashboard/chat-customer'
+    // },
     {
         id: 16,
         title: 'Chat Support',

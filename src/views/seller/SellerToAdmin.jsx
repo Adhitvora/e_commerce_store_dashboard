@@ -1,108 +1,140 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { send_message_seller_admin, messageClear, get_seller_message, updateAdminMessage } from '../../store/Reducers/chatReducer'
 import { useDispatch, useSelector } from 'react-redux'
+import { get_messages, send_message, updateMessage, messageClear } from '../../store/Reducers/chatReducer'
 import { socket } from '../../utils/utils'
 import adminImage from '../../assets/admin.jpg'
 import sellerImage from '../../assets/seller.png'
 
 const SellerToAdmin = () => {
 
+    const dispatch = useDispatch()
     const scrollRef = useRef()
 
-    const [text, setText] = useState('')
-    const dispatch = useDispatch()
-    const { seller_admin_message, successMessage, activeAdmin } = useSelector(state => state.chat)
     const { userInfo } = useSelector(state => state.auth)
+    const { messages, successMessage } = useSelector(state => state.chat)
+
+    const [text, setText] = useState('')
+    const sellerId = userInfo?._id
+    const ADMIN_ID = "6980480486aa781558164fb0" 
+
+    // Register seller
     useEffect(() => {
-        dispatch(get_seller_message())
-    }, [])
+        if (!sellerId) return
+
+        socket.emit('register', {
+            userId: sellerId,
+            role: 'seller'
+        })
+
+    }, [sellerId])
+
+    // Load messages
+    useEffect(() => {
+        if (!sellerId) return
+
+        dispatch(get_messages({
+            userId: sellerId,
+            role: 'seller'
+        }))
+    }, [sellerId, dispatch])
+
     const send = (e) => {
         e.preventDefault()
-        dispatch(send_message_seller_admin({
-            senderId: userInfo._id,
-            receverId: '',
-            message: text,
-            senderName: userInfo.name
+        if (!text.trim()) return
+
+        dispatch(send_message({
+            senderId: sellerId,
+            senderRole: 'seller',
+            receiverId: ADMIN_ID,
+            receiverRole: 'admin',
+            message: text
         }))
+
         setText('')
     }
 
-    useEffect(() => {
-        socket.on('receved_admin_message', msg => {
-            dispatch(updateAdminMessage(msg))
-        })
-    }, [])
-
+    // Emit socket after DB save
     useEffect(() => {
         if (successMessage) {
-            socket.emit('send_message_seller_to_admin', seller_admin_message[seller_admin_message.length - 1])
+            const lastMessage = messages[messages.length - 1]
+            socket.emit('send_message', lastMessage)
             dispatch(messageClear())
         }
-    }, [successMessage])
+    }, [successMessage, messages, dispatch])
+
+    // Receive message
+    useEffect(() => {
+        socket.on('receive_message', (msg) => {
+            dispatch(updateMessage(msg))
+        })
+
+        return () => socket.off('receive_message')
+    }, [dispatch])
 
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [seller_admin_message])
+    }, [messages])
 
     return (
         <div className='px-2 lg:px-7 py-5'>
-            <div className='w-full bg-[#283046] px-4 py-4 rounded-md h-[calc(100vh-140px)]'>
-                <div className='flex w-full h-full relative'>
+            <div className='w-full bg-[#283046] px-4 py-4 rounded-md h-[calc(100vh-140px)] flex flex-col'>
 
-                    <div className='w-full md:pl-4'>
-                        <div className='flex justify-between items-center'>
-                            <div className='flex justify-start items-center gap-3'>
-                                <div className='relative'>
-                                    <img className='w-[42px] h-[42px] border-green-500 border-2 max-w-[42px] p-[2px] rounded-full' src={adminImage} alt="" />
-                                    {
-                                        activeAdmin && <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0'></div>
-                                    }
-
-                                </div>
-                                <h2 className='text-base text-white font-semibold'>Support</h2>
-                            </div>
-                        </div>
-                        <div className='py-4'>
-                            <div className='bg-slate-800 h-[calc(100vh-290px)] rounded-md p-3 overflow-y-auto'>
-                                {
-                                    seller_admin_message.map((m, i) => {
-                                        if (userInfo._id !== m.senderId) {
-                                            return (
-                                                <div ref={scrollRef} key={i} className='w-full flex justify-start items-center'>
-                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%]'>
-                                                        <div>
-                                                            <img className='w-[38px] h-[38px] border-2 border-white rounded-full max-w-[38px] p-[3px]' src={adminImage} alt="image" />
-                                                        </div>
-                                                        <div className='flex justify-center items-start flex-col w-full bg-orange-500 shadow-lg shadow-orange-500/50 text-white py-1 px-2 rounded-sm'>
-                                                            <span>{m.message}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        } else {
-                                            return (
-                                                <div ref={scrollRef} key={i} className='w-full flex justify-end items-center'>
-                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%]'>
-                                                        <div className='flex justify-center items-start flex-col w-full bg-blue-500 shadow-lg shadow-blue-500/50 text-white py-1 px-2 rounded-sm'>
-                                                            <span>{m.message}</span>
-                                                        </div>
-                                                        <div>
-                                                            <img className='w-[38px] h-[38px] border-2 border-white rounded-full max-w-[38px] p-[3px]' src={userInfo.image ? userInfo.image : sellerImage} alt="" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        }
-                                    })
-                                }
-                            </div>
-                        </div>
-                        <form onSubmit={send} className='flex gap-3'>
-                            <input required value={text} onChange={(e) => setText(e.target.value)} className='w-full flex justify-between px-2 border border-slate-700 items-center py-[5px] focus:border-blue-500 rounded-md outline-none bg-transparent text-[#d0d2d6]' type="text" placeholder='input your message' />
-                            <button className='shadow-lg bg-cyan-500 hover:shadow-cyan-500/50 text-semibold w-[75px] h-[35px] rounded-md text-white flex justify-center items-center'>Send</button>
-                        </form>
-                    </div>
+                <div className='flex items-center gap-3 mb-4'>
+                    <img
+                        className='w-[42px] h-[42px] border-2 border-green-500 rounded-full'
+                        src={adminImage}
+                        alt=""
+                    />
+                    <h2 className='text-white font-semibold'>Support (Admin)</h2>
                 </div>
+
+                <div className='flex-1 bg-slate-800 rounded-md p-3 overflow-y-auto'>
+                    {messages.map((m, i) => (
+                        <div
+                            key={i}
+                            ref={scrollRef}
+                            className={`flex mb-2 ${m.senderRole === 'seller' ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div className='flex gap-2 items-end max-w-[80%]'>
+
+                                {m.senderRole !== 'seller' && (
+                                    <img
+                                        className='w-[35px] h-[35px] rounded-full'
+                                        src={adminImage}
+                                        alt=""
+                                    />
+                                )}
+
+                                <div className={`p-2 rounded text-white ${m.senderRole === 'seller' ? 'bg-blue-500' : 'bg-orange-500'}`}>
+                                    {m.message}
+                                </div>
+
+                                {m.senderRole === 'seller' && (
+                                    <img
+                                        className='w-[35px] h-[35px] rounded-full'
+                                        src={userInfo.image || sellerImage}
+                                        alt=""
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <form onSubmit={send} className='flex gap-3 mt-4'>
+                    <input
+                        required
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        className='w-full px-3 py-2 rounded-md outline-none'
+                        type='text'
+                        placeholder='Type your message...'
+                    />
+                    <button className='bg-cyan-500 px-4 rounded-md text-white'>
+                        Send
+                    </button>
+                </form>
+
             </div>
         </div>
     )

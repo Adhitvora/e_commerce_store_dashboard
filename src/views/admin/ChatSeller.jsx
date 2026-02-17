@@ -1,168 +1,248 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { IoMdClose } from 'react-icons/io'
-import { FaList } from 'react-icons/fa'
-import { useParams, Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { get_sellers } from '../../store/Reducers/chatReducer'
-import { BsEmojiSmile } from 'react-icons/bs'
-import adminImage from '../../assets/admin.jpg'
-import sellerImage from '../../assets/seller.png'
-import toast from 'react-hot-toast'
-import { send_message_seller_admin, messageClear, get_admin_message, updateSellerMessage } from '../../store/Reducers/chatReducer'
-import { socket } from '../../utils/utils'
+import React, { useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  get_messages,
+  send_message,
+  updateMessage,
+  selectUser,
+  messageClear,
+  get_admin_conversations
+} from "../../store/Reducers/chatReducer";
+import { socket } from "../../utils/utils";
+import { AiFillCopy } from "react-icons/ai";
 
-const ChatSeller = () => {
+const Chat = () => {
+  const dispatch = useDispatch();
+  const scrollRef = useRef();
 
-    const scrollRef = useRef()
+  const { userInfo } = useSelector((state) => state.auth);
+  const { messages, users, selectedUser, successMessage } = useSelector(
+    (state) => state.chat
+  );
 
-    const { sellerId } = useParams()
-    const dispatch = useDispatch()
-    const { sellers, activeSellers, seller_admin_message, currentSeller, successMessage } = useSelector(state => state.chat)
-    const { userInfo } = useSelector(state => state.auth)
-    const [show, setShow] = useState(false)
-    const [recevedMessage, setRecevedMessage] = useState('')
+  const [text, setText] = useState("");
+  const adminId = userInfo?._id;
 
-    const [text, setText] = useState('')
-    useEffect(() => {
-        dispatch(get_sellers())
-    }, [])
+  /* ---------------- SOCKET REGISTER ---------------- */
+  useEffect(() => {
+    if (!adminId) return;
 
-    const send = (e) => {
-        e.preventDefault()
-        dispatch(send_message_seller_admin({
-            senderId: '',
-            receverId: sellerId,
-            message: text,
-            senderName: 'Myshop support'
-        }))
-        setText('')
+    socket.emit("register", {
+      userId: adminId,
+      role: "admin",
+    });
+
+  }, [adminId]);
+
+  /* ---------------- LOAD CONVERSATIONS ---------------- */
+  useEffect(() => {
+    if (!adminId) return;
+
+    dispatch(get_admin_conversations());
+
+  }, [adminId, dispatch]);
+
+  /* ---------------- LOAD MESSAGES ---------------- */
+  useEffect(() => {
+    if (!adminId) return;
+
+    dispatch(
+      get_messages({
+        userId: adminId,
+        role: "admin",
+      })
+    );
+
+  }, [adminId, dispatch]);
+
+  /* ---------------- FILTER MESSAGES ---------------- */
+  const filteredMessages = selectedUser
+    ? messages.filter(
+        (m) =>
+          m.senderId === selectedUser.id ||
+          m.receiverId === selectedUser.id
+      )
+    : [];
+
+  /* ---------------- SEND MESSAGE ---------------- */
+  const handleSend = (e) => {
+    e.preventDefault();
+    if (!text.trim() || !selectedUser) return;
+
+    dispatch(
+      send_message({
+        senderId: adminId,
+        senderRole: "admin",
+        receiverId: selectedUser.id,
+        receiverRole: selectedUser.role,
+        message: text,
+      })
+    );
+
+    setText("");
+  };
+
+  /* ---------------- EMIT SOCKET ---------------- */
+  useEffect(() => {
+    if (successMessage) {
+      const lastMessage = messages[messages.length - 1];
+      socket.emit("send_message", lastMessage);
+      dispatch(messageClear());
     }
+  }, [successMessage, messages, dispatch]);
 
-    useEffect(() => {
-        if (sellerId) {
-            dispatch(get_admin_message(sellerId))
-        }
-    }, [sellerId])
+  /* ---------------- RECEIVE SOCKET ---------------- */
+  useEffect(() => {
+    socket.on("receive_message", (msg) => {
+      dispatch(updateMessage(msg));
+    });
 
-    useEffect(() => {
-        if (successMessage) {
-            socket.emit('send_message_admin_to_seller', seller_admin_message[seller_admin_message.length - 1])
-            dispatch(messageClear())
-        }
-    }, [successMessage])
+    return () => socket.off("receive_message");
+  }, [dispatch]);
 
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [filteredMessages]);
 
-    useEffect(() => {
-        socket.on('receved_seller_message', msg => {
-            setRecevedMessage(msg)
-        })
-    }, [])
+  return (
+    <div className="p-5 flex h-[calc(100vh-100px)]">
 
-    useEffect(() => {
-        if (recevedMessage) {
-            if (recevedMessage.senderId === sellerId && recevedMessage.receverId === '') {
-                dispatch(updateSellerMessage(recevedMessage))
-            } else {
-                toast.success(recevedMessage.senderName + ' send a message')
-            }
-        }
-    }, [recevedMessage])
+      {/* ---------------- SIDEBAR ---------------- */}
+      <div className="w-[340px] bg-[#1e293b] text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex flex-col">
 
-    useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [seller_admin_message])
-
-
-    return (
-        <div className='px-2 lg:px-7 py-5'>
-            <div className='w-full bg-[#283046] px-4 py-4 rounded-md h-[calc(100vh-140px)]'>
-                <div className='flex w-full h-full relative'>
-                    <div className={`w-[280px] h-full absolute z-10 ${show ? '-left-[16px]' : '-left-[336px]'} md:left-0 md:relative transition-all`}>
-                        <div className='w-full h-[calc(100vh-177px)] bg-[#252b3b] md:bg-transparent overflow-y-auto'>
-                            <div className='flex text-xl justify-between items-center p-4 md:p-0 md:px-3 md:pb-3 text-white'>
-                                <h2>Sellers</h2>
-                                <span onClick={() => setShow(!show)} className='block cursor-pointer md:hidden'><IoMdClose /></span>
-                            </div>
-                            {
-                                sellers.map((s, i) => <Link key={i} to={`/admin/dashboard/chat-sellers/${s._id}`} className={`h-[60px] flex justify-start gap-2 items-center text-white px-2 rounded-sm py-2 cursor-pointer ${sellerId === s._id ? 'bg-slate-700' : ''}`}>
-                                    <div className='relative'>
-                                        <img className='w-[38px] h-[38px] border-white border-2 max-w-[38px] p-[2px] rounded-full' src={s.image ? s.image : sellerImage} alt="" />
-                                        {
-                                            activeSellers.some(a => a.sellerId === s._id) && <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0'></div>
-                                        }
-                                    </div>
-                                    <div className='flex justify-center items-start flex-col w-full'>
-                                        <div className='flex justify-between items-center w-full'>
-                                            <h2 className='text-base font-semibold'>{s.name}</h2>
-                                        </div>
-                                    </div>
-                                </Link>)
-                            }
-
-                        </div>
-                    </div>
-                    <div className='w-full md:w-[calc(100%-200px)] md:pl-4'>
-                        <div className='flex justify-between items-center'>
-                            {
-                                sellerId && <div className='flex justify-start items-center gap-3'>
-                                    <div className='relative'>
-                                        <img className='w-[42px] h-[42px] border-green-500 border-2  p-[2px] rounded-full' src={currentSeller.image ? currentSeller.image : sellerImage} alt="" />
-                                        <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0'></div>
-                                    </div>
-                                    <span className='text-white'>{currentSeller?.name}</span>
-                                </div>
-                            }
-                            <div onClick={() => setShow(!show)} className='w-[35px] flex md:hidden h-[35px] rounded-sm bg-blue-500 shadow-lg hover:shadow-blue-500/50 justify-center cursor-pointer items-center text-white'>
-                                <span><FaList /></span>
-                            </div>
-                        </div>
-                        <div className='py-4'>
-                            <div className='bg-slate-800 h-[calc(100vh-290px)] rounded-md p-3 overflow-y-auto'>
-                                {
-                                    sellerId ? seller_admin_message.map((m, i) => {
-                                        if (m.senderId === sellerId) {
-                                            return (
-                                                <div ref={scrollRef} className='w-full flex justify-start items-center'>
-                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%]'>
-                                                        <div>
-                                                            <img className='w-[38px] h-[38px] border-2 border-white rounded-full max-w-[38px] p-[3px]' src={currentSeller?.image ? currentSeller?.image : sellerImage} alt="" />
-                                                        </div>
-                                                        <div className='flex justify-center items-start flex-col w-full bg-orange-500 shadow-lg shadow-orange-500/50 text-white py-1 px-2 rounded-sm'>
-                                                            <span>{m.message}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        } else {
-                                            return (
-                                                <div ref={scrollRef} className='w-full flex justify-end items-center'>
-                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%]'>
-                                                        <div className='flex justify-center items-start flex-col w-full bg-blue-500 shadow-lg shadow-blue-500/50 text-white py-1 px-2 rounded-sm'>
-                                                            <span>{m.message}</span>
-                                                        </div>
-                                                        <div>
-                                                            <img className='w-[38px] h-[38px] border-2 border-white rounded-full max-w-[38px] p-[3px]' src={userInfo.image ? userInfo.image : adminImage} alt="" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        }
-                                    }) : <div className='w-full h-full flex justify-center items-center flex-col gap-2 text-white'>
-                                        <span><BsEmojiSmile /></span>
-                                        <span>Select seller</span>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                        <form onSubmit={send} className='flex gap-3'>
-                            <input required value={text} onChange={(e) => setText(e.target.value)} readOnly={sellerId ? false : true} className='w-full flex justify-between px-2 border border-slate-700 items-center py-[5px] focus:border-blue-500 rounded-md outline-none bg-transparent text-[#d0d2d6]' type="text" placeholder='input your message' />
-                            <button disabled={sellerId ? false : true} className='shadow-lg bg-cyan-500 hover:shadow-cyan-500/50 text-semibold w-[75px] h-[35px] rounded-md text-white flex justify-center items-center'>Send</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Conversations</h2>
+          <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">
+            {users?.length || 0}
+          </span>
         </div>
-    )
-}
 
-export default ChatSeller
+        <div className="flex-1 overflow-y-auto pr-1">
+
+          {users?.map((u, i) => {
+
+            const isActive = selectedUser?.id === u.id;
+
+            return (
+              <div
+                key={i}
+                onClick={() => dispatch(selectUser(u))}
+                className={`cursor-pointer mb-3 p-3 rounded-xl border transition
+                  ${
+                    isActive
+                      ? "bg-slate-700 border-slate-600"
+                      : "bg-slate-800 border-slate-800 hover:bg-slate-700"
+                  }
+                `}
+              >
+                <div className="flex items-center gap-3">
+
+                  {/* IMAGE */}
+                  <div className="relative">
+               <div className="relative w-12 h-12 flex-shrink-0">
+  {u.image ? (
+    <img
+      src={u.image}
+      alt="profile"
+      onError={(e) => {
+        e.target.onerror = null
+        e.target.src = ""
+      }}
+      className="w-12 h-12 rounded-full object-cover border-2 border-slate-600"
+    />
+  ) : (
+    <div className="w-12 h-12 rounded-full flex items-center justify-center 
+                    border-2 border-slate-600 
+                    bg-gradient-to-br from-indigo-500 to-purple-600 
+                    text-white font-bold text-lg uppercase shadow-md">
+      {u?.name ? u.name.charAt(0) : "U"}
+    </div>
+  )}
+</div>
+                    
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e293b]" />
+                  </div>
+
+                  {/* INFO */}
+                  <div className="flex-1 min-w-0">
+
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-semibold truncate">
+                        {u.name}
+                      </h3>
+
+                      <span className="text-[10px] uppercase bg-blue-600 px-2 py-[2px] rounded-full">
+                        {u.role}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-slate-400 truncate max-w-[150px]">
+                        {u.id}
+                      </p>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(u.id);
+                        }}
+                        className="text-slate-300 hover:text-white"
+                      >
+                        <AiFillCopy size={14} />
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+        </div>
+      </div>
+
+      {/* ---------------- CHAT WINDOW ---------------- */}
+      <div className="flex-1 flex flex-col ml-4 bg-slate-900 p-4 rounded-md">
+
+        <div className="flex-1 overflow-y-auto">
+          {filteredMessages.map((m, i) => (
+            <div
+              key={i}
+              ref={scrollRef}
+              className={`flex mb-2 ${
+                m.senderRole === "admin"
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
+              <div
+                className={`p-2 rounded text-white ${
+                  m.senderRole === "admin"
+                    ? "bg-blue-500"
+                    : "bg-orange-500"
+                }`}
+              >
+                {m.message}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={handleSend} className="flex mt-3">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="flex-1 p-2 rounded-l outline-none"
+            placeholder="Type message..."
+          />
+          <button className="bg-blue-600 px-4 text-white rounded-r">
+            Send
+          </button>
+        </form>
+
+      </div>
+    </div>
+  );
+};
+
+export default Chat;
