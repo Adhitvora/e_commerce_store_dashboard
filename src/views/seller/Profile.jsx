@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 import { useSelector, useDispatch } from 'react-redux'
 import { overrideStyle } from '../../utils/utils'
 import { profile_image_upload, messageClear, profile_info_add } from '../../store/Reducers/authReducer'
-import { create_stripe_connect_account } from '../../store/Reducers/sellerReducer'
+import { create_razorpay_account } from '../../store/Reducers/sellerReducer'
 const Profile = () => {
     const [state, setState] = useState({
         division: '',
@@ -93,16 +93,16 @@ const Profile = () => {
                                     <span>Status : </span>
                                     <span>{userInfo.status}</span>
                                 </div>
-                                <div className='flex gap-2'>
+                                {/* <div className='flex gap-2'>
                                     <span>Payment Account : </span>
                                     <p>
                                         {
-                                            userInfo.payment === 'active' ? <span className='bg-red-500 text-white text-xs cursor-pointer font-normal ml-2 px-2 py-0.5 rounded '>{userInfo.payment}</span> : <span onClick={() => dispatch(create_stripe_connect_account())} className='bg-blue-500 text-white text-xs cursor-pointer font-normal ml-2 px-2 py-0.5 rounded '>
+                                            userInfo.payment === 'active' ? <span className='bg-red-500 text-white text-xs cursor-pointer font-normal ml-2 px-2 py-0.5 rounded '>{userInfo.payment}</span> : <span onClick={() => dispatch(create_razorpay_account())} className='bg-blue-500 text-white text-xs cursor-pointer font-normal ml-2 px-2 py-0.5 rounded '>
                                                 click active
                                             </span>
                                         }
                                     </p>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                         <div className='px-0 md:px-5 py-2'>

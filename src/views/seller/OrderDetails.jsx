@@ -1,94 +1,169 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { useDispatch, useSelector } from 'react-redux'
-import { messageClear, get_seller_order, seller_order_status_update } from '../../store/Reducers/OrderReducer'
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  messageClear,
+  get_seller_order,
+  seller_order_status_update,
+} from "../../store/Reducers/OrderReducer";
+
 const OrderDetails = () => {
+  const { orderId } = useParams();
+  const dispatch = useDispatch();
 
+  const { order, errorMessage, successMessage } = useSelector(
+    (state) => state.order,
+  );
 
-    const { orderId } = useParams()
-    const dispatch = useDispatch()
+  const [status, setStatus] = useState("");
 
-    const { order, errorMessage, successMessage } = useSelector(state => state.order)
+  // Fetch order
+  useEffect(() => {
+    dispatch(get_seller_order(orderId));
+  }, [orderId, dispatch]);
 
-    useEffect(() => {
-        dispatch(get_seller_order(orderId))
-    }, [orderId])
-
-    const [status, setStatus] = useState('')
-    useEffect(() => {
-        setStatus(order?.delivery_status)
-    }, [order])
-    const status_update = (e) => {
-        dispatch(seller_order_status_update({ orderId, info: { status: e.target.value } }))
-        setStatus(e.target.value)
+  // Sync status
+  useEffect(() => {
+    if (order?.delivery_status) {
+      setStatus(order.delivery_status);
     }
+  }, [order]);
 
-    useEffect(() => {
-        if (successMessage) {
-            toast.success(successMessage)
-            dispatch(messageClear())
-        }
-        if (errorMessage) {
-            toast.error(errorMessage)
-            dispatch(messageClear())
-        }
-    }, [successMessage, errorMessage])
+  // Update status
+  const status_update = (e) => {
+    const value = e.target.value;
+    setStatus(value);
+    dispatch(
+      seller_order_status_update({
+        orderId,
+        info: { status: value },
+      }),
+    );
+  };
 
+  // Toast handling
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(messageClear());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(messageClear());
+    }
+  }, [successMessage, errorMessage, dispatch]);
 
-    return (
-        <div className='px-2 lg:px-7 pt-5'>
-            <div className='w-full p-4  bg-[#283046] rounded-md'>
-                <div className='flex justify-between items-center p-4'>
-                    <h2 className='text-xl text-[#d0d2d6]'>Order Details</h2>
-                    <select onChange={status_update} value={status} name="" id="" className='px-4 py-2 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]'>
-                        <option value="pending">pending</option>
-                        <option value="processing">processing</option>
-                        <option value="warehouse">warehouse</option>
-                        <option value="cancelled">cancelled</option>
-                    </select>
-                </div>
-                <div className='p-4'>
-                    <div className='flex gap-2 text-lg text-[#d0d2d6]'>
-                        <h2>#{order._id}</h2>
-                        <span>{order.date}</span>
-                    </div>
-                    <div className='flex flex-wrap'>
-                        <div className='w-[32%]'>
-                            <div className='pr-3 text-[#d0d2d6] text-lg'>
-                                <div className='flex flex-col gap-1'>
-                                    <h2 className='pb-2 font-semibold'>Deliver to : {order.shippingInfo}</h2>
-                                </div>
-                                <div className='flex justify-start items-center gap-3'>
-                                    <h2>Payment Status : </h2>
-                                    <span className='text-base'>{order.payment_status}</span>
-                                </div>
-                                <span>Price : ₹{order.price}</span>
-                                <div className='mt-4 flex flex-col gap-4'>
-                                    <div className='text-[#d0d2d6] flex flex-col gap-6'>
-                                        {
-                                            order?.products?.map((p, i) => <div key={i} className='flex gap-3 text-md'>
-                                                <img className='w-[45px] h-[45px]' src={p.images[0]} alt="" />
-                                                <div>
-                                                    <h2>{p.name}</h2>
-                                                    <p>
-                                                        <span>Brand : </span>
-                                                        <span>{p.brand} </span>
-                                                        <span className='text-lg'>Quantity : {p.quantity}</span>
-                                                    </p>
-                                                </div>
-                                            </div>)
-                                        }
+  if (!order) {
+    return <div className="p-6 text-white">Loading Order...</div>;
+  }
 
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="px-2 lg:px-7 pt-5">
+      <div className="w-full p-4 bg-[#283046] rounded-md">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4">
+          <h2 className="text-xl text-[#d0d2d6]">Order Details</h2>
+
+          <select
+            onChange={status_update}
+            value={status}
+            className="px-4 py-2 bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]"
+          >
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="warehouse">Warehouse</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         </div>
-    )
-}
 
-export default OrderDetails
+        {/* Order Basic Info */}
+        <div className="px-4 text-[#d0d2d6]">
+          <div className="flex gap-4 text-lg mb-4">
+            <span>Order ID: #{order?._id}</span>
+            <span>{order?.date}</span>
+          </div>
+
+          <div className="flex flex-wrap gap-6">
+            {/* Shipping Section */}
+            <div className="w-full md:w-[30%]">
+              <h3 className="font-semibold text-lg mb-3">
+                Shipping Information
+              </h3>
+
+              {order?.shippingInfo && (
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>Name:</strong> {order.shippingInfo.name}
+                  </p>
+                  <p>
+                    <strong>Address:</strong> {order.shippingInfo.address}
+                  </p>
+                  <p>
+                    <strong>Location:</strong> {order.shippingInfo.area},{" "}
+                    {order.shippingInfo.city}
+                  </p>
+                  <p>
+                    <strong>Province:</strong> {order.shippingInfo.province} -{" "}
+                    {order.shippingInfo.post}
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {order.shippingInfo.phone}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-4 space-y-2">
+                <p>
+                  <strong>Payment:</strong>{" "}
+                  {order?.payment_status?.toUpperCase()}
+                </p>
+                <p>
+                  <strong>Total Price:</strong> ₹{order?.price}
+                </p>
+              </div>
+            </div>
+
+            {/* Products Section */}
+            <div className="w-full md:w-[65%]">
+              <h3 className="font-semibold text-lg mb-3">Products</h3>
+
+              {order?.products?.length > 0 ? (
+                order.products.map((p, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-4 mb-4 bg-[#1f2638] p-3 rounded-md"
+                  >
+                    <img
+                      className="w-[70px] h-[70px] object-cover rounded"
+                      src={p?.images?.[0]}
+                      alt={p?.name}
+                    />
+
+                    <div className="flex flex-col justify-between">
+                      <h4 className="font-semibold">{p?.name}</h4>
+
+                      <p className="text-sm">
+                        <span>Brand: {p?.brand}</span>
+                      </p>
+
+                      <p className="text-sm">Quantity: {p?.quantity}</p>
+
+                      <p className="text-sm">Price: ₹{p?.price}</p>
+
+                      <p className="text-sm">Approval: {p?.approval_status}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No products found.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OrderDetails;

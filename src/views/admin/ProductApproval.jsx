@@ -60,14 +60,17 @@ const ProductApproval = () => {
         />
 
         <div className="relative overflow-x-auto mt-5">
-          <table className="w-full text-sm text-left text-[#d0d2d6]">
-            <thead className="text-sm uppercase border-b border-slate-700">
+          <table className="w-full table-auto text-sm text-left text-[#d0d2d6]">
+            <thead className="text-sm uppercase border-b border-slate-700 text-center">
               <tr>
-                <th className="py-3 px-4">No</th>
-                <th className="py-3 px-4">Image</th>
-                <th className="py-3 px-4">Name</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Seller Name</th>
+                <th className="py-3 px-4 text-left">No</th>
+                <th className="py-3 px-4 text-left">Image</th>
+                <th className="py-3 px-4 text-left">Name</th>
+                <th className="py-3 px-2">Total</th>
+                <th className="py-3 px-2">Pending</th>
+                <th className="py-3 px-2">Cancel</th>
+                <th className="py-3 px-2">Delivered</th>
+                <th className="py-3 px-4 text-left">Seller</th>
                 <th className="py-3 px-4">Price</th>
                 <th className="py-3 px-4">Discount</th>
                 <th className="py-3 px-4">Stock</th>
@@ -78,33 +81,50 @@ const ProductApproval = () => {
 
             <tbody>
               {products.map((d, i) => (
-                <tr key={d._id}>
-                  <td className="py-1 px-4">{i + 1}</td>
+                <tr
+                  key={d._id}
+                  className="border-b border-slate-700 align-middle"
+                >
+                  <td className="py-2 px-4 text-left">{i + 1}</td>
 
-                  <td className="py-1 px-4">
+                  <td className="py-2 px-4 text-left">
                     <img
-                      className="w-[45px] h-[45px]"
+                      className="w-[45px] h-[45px] object-cover rounded"
                       src={d.images[0]}
                       alt=""
                     />
                   </td>
 
-                  <td className="py-1 px-4">
+                  <td className="py-2 px-4 text-left">
                     {d.name.length > 16 ? d.name.slice(0, 16) + "..." : d.name}
                   </td>
 
-                  <td className="py-1 px-4">{d.category}</td>
-                  <td className="py-1 px-4">{d.sellerId?.name || "N/A"}</td>
-                  <td className="py-1 px-4">₹{d.price}</td>
+                  <td className="py-2 px-2 text-center">
+                    {d.sellerProgress.totalOrders}
+                  </td>
+                  <td className="py-2 px-2 text-center">
+                    {d.sellerProgress.pendingOrders}
+                  </td>
+                  <td className="py-2 px-2 text-center">
+                    {d.sellerProgress.cancelledOrders}
+                  </td>
+                  <td className="py-2 px-2 text-center">
+                    {d.sellerProgress.deliveredOrders}
+                  </td>
 
-                  <td className="py-1 px-4">
+                  <td className="py-2 px-4 text-left">
+                    {d.sellerId?.name || "N/A"}
+                  </td>
+
+                  <td className="py-2 px-4 text-center">₹{d.price}</td>
+
+                  <td className="py-2 px-4 text-center">
                     {d.discount === 0 ? "no discount" : `${d.discount}%`}
                   </td>
 
-                  <td className="py-1 px-4">{d.stock}</td>
+                  <td className="py-2 px-4 text-center">{d.stock}</td>
 
-                  {/* STATUS */}
-                  <td className="py-1 px-4">
+                  <td className="py-2 px-4 text-center">
                     {d.approval_status === "pending" && (
                       <span className="text-yellow-400">Pending</span>
                     )}
@@ -116,10 +136,8 @@ const ProductApproval = () => {
                     )}
                   </td>
 
-                  {/* ACTION */}
-                  <td className="py-1 px-4">
-                    <div className="flex gap-4">
-                      {/* APPROVE: pending + rejected */}
+                  <td className="py-2 px-4 text-center">
+                    <div className="flex justify-center gap-3">
                       {(d.approval_status === "pending" ||
                         d.approval_status === "rejected") && (
                         <button
@@ -131,7 +149,6 @@ const ProductApproval = () => {
                         </button>
                       )}
 
-                      {/* REJECT: pending + approved */}
                       {(d.approval_status === "pending" ||
                         d.approval_status === "approved") && (
                         <button
