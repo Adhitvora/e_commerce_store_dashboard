@@ -111,6 +111,30 @@ export const get_active_sellers = createAsyncThunk(
 
 // ================= GET DEACTIVE SELLERS (FIXED ACTION TYPE) =================
 
+// export const get_deactive_sellers = createAsyncThunk(
+//     'seller/get_deactive_sellers',
+//     async ({ parPage, page, searchValue }, { rejectWithValue, getState }) => {
+
+//         const token = getState().auth.token
+
+//         const config = {
+//             headers: {
+//                 Authorization: `Bearer ${token}`
+//             }
+//         }
+
+//         try {
+//             const { data } = await axios.get(
+//                 `${api_url}/api/get-deactive-sellers?page=${page}&&searchValue=${searchValue}&&parPage=${parPage}`,
+//                 config
+//             )
+//             return data
+//         } catch (error) {
+//             return rejectWithValue(error.response.data)
+//         }
+//     }
+// )
+
 export const get_deactive_sellers = createAsyncThunk(
     'seller/get_deactive_sellers',
     async ({ parPage, page, searchValue }, { rejectWithValue, getState }) => {
@@ -124,11 +148,14 @@ export const get_deactive_sellers = createAsyncThunk(
         }
 
         try {
+
             const { data } = await axios.get(
-                `${api_url}/api/get-deactive-sellers?page=${page}&&searchValue=${searchValue}&&parPage=${parPage}`,
+                `${api_url}/api/get-deactive-sellers?page=${page}&searchValue=${searchValue}&parPage=${parPage}`,
                 config
             )
+
             return data
+
         } catch (error) {
             return rejectWithValue(error.response.data)
         }
@@ -271,6 +298,22 @@ export const sellerReducer = createSlice({
             .addCase(active_stripe_connect_account.fulfilled, (state, { payload }) => {
                 state.loader = false
                 state.successMessage = payload.message
+            })
+
+            .addCase(get_deactive_sellers.pending, (state) => {
+                state.loader = true
+            })
+
+            .addCase(get_deactive_sellers.fulfilled, (state, { payload }) => {
+
+                state.loader = false
+                state.sellers = payload.sellers
+                state.totalSellers = payload.totalSellers
+
+            })
+
+            .addCase(get_deactive_sellers.rejected, (state) => {
+                state.loader = false
             })
     }
 })
