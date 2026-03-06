@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import seller from "../../assets/seller.png";
 
 import { get_admin_dashboard_index_data } from "../../store/Reducers/dashboardIndexReducer";
+import { FiEye } from "react-icons/fi";
 
 const AdminDashboard = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -220,7 +221,12 @@ const AdminDashboard = () => {
           <h2 className="font-semibold text-lg text-[#d0d2d6] pb-3">
             Recent Orders
           </h2>
-          <Link className="font-semibold text-sm text-[#d0d2d6]">View All</Link>
+          <Link
+            to="/admin/dashboard/orders"
+            className="font-semibold text-sm text-[#d0d2d6]"
+          >
+            View All
+          </Link>
         </div>
         <div className="relative overflow-x-auto">
           <table className="w-full text-sm text-left text-[#d0d2d6]">
@@ -236,7 +242,7 @@ const AdminDashboard = () => {
                   Payment Status
                 </th>
                 <th scope="col" className="py-3 px-4">
-                  Order Status
+                  Delivery Status
                 </th>
                 <th scope="col" className="py-3 px-4">
                   Active
@@ -262,21 +268,26 @@ const AdminDashboard = () => {
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    <span>{d.delivery_status}</span>
-                  </td>
-                  <td
-                    scope="row"
-                    className="py-3 px-4 font-medium whitespace-nowrap"
-                  >
                     <span>{d.payment_status}</span>
                   </td>
                   <td
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    <Link to={`/admin/dashboard/order/details/${d._id}`}>
-                      view
-                    </Link>
+                    <span>{d.delivery_status}</span>
+                  </td>
+                  <td
+                    scope="row"
+                    className="py-3 px-4 font-medium whitespace-nowrap"
+                  >
+                    <div className="flex justify-between items-center gap-4">
+                      <Link
+                        to={`/admin/dashboard/order/details/${d._id}`}
+                        className="p-[6px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50"
+                      >
+                        <FiEye />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

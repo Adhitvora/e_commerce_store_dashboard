@@ -42,13 +42,19 @@ const Orders = () => {
                         <tbody>
                             {
                                 myOrders.map((d, i) => <tr key={i}>
-                                    <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>#{d._id}</td>
+                                    <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>#{d.orderId || d._id}</td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>₹{d.price}</td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>
                                         <span>{d.payment_status}</span>
                                     </td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>
-                                        <span>{d.delivery_status}</span>
+                                        <span>
+                                            {
+                                                d.order_status === 'REJECT'
+                                                    ? 'CANCELLED'
+                                                    : (d.order_status || 'PENDING')
+                                            }
+                                        </span>
                                     </td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>₹{d.date}</td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>

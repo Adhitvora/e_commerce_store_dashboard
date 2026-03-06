@@ -118,6 +118,24 @@ export const seller_order_status_update = createAsyncThunk(
     }
 )
 
+export const seller_delivery_status_update = createAsyncThunk(
+    'order/seller_delivery_status_update',
+    async ({ orderId, info }, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.put(`${api_url}/api/seller/delivery-status/update/${orderId}`, info, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
 export const OrderReducer = createSlice({
     name: 'order',
     initialState: {
@@ -158,6 +176,12 @@ export const OrderReducer = createSlice({
             state.errorMessage = payload.message
         },
         [seller_order_status_update.fulfilled]: (state, { payload }) => {
+            state.successMessage = payload.message
+        },
+        [seller_delivery_status_update.rejected]: (state, { payload }) => {
+            state.errorMessage = payload.message
+        },
+        [seller_delivery_status_update.fulfilled]: (state, { payload }) => {
             state.successMessage = payload.message
         },
     }

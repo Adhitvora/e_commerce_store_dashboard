@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { admin_login, messageClear } from "../../store/Reducers/authReducer";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 const AdminLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const AdminLogin = () => {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const inputHandle = (e) => {
     setSatate({
       ...state,
@@ -71,16 +73,27 @@ const AdminLogin = () => {
             </div>
             <div className="flex flex-col w-full gap-1 mb-5">
               <label htmlFor="password">Password</label>
-              <input
-                onChange={inputHandle}
-                value={state.password}
-                className="px-3 py-2 outline-none border border-slate-700 bg-transparent rounded-md text-[#d0d2d6] focus:border-indigo-500 overflow-hidden"
-                type="password"
-                name="password"
-                placeholder="password"
-                id="password"
-                required
-              />
+              <div className="relative">
+                <input
+                  onChange={inputHandle}
+                  value={state.password}
+                  className="w-full px-3 py-2 pr-10 outline-none border border-slate-700 bg-transparent rounded-md text-[#d0d2d6] focus:border-indigo-500 overflow-hidden"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  autoComplete="current-password"
+                  placeholder="password"
+                  id="password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
+              </div>
             </div>
             <button
               disabled={loader ? true : false}

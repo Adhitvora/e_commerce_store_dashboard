@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { BsImages } from 'react-icons/bs'
 import { FaEdit } from 'react-icons/fa'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { PropagateLoader } from 'react-spinners'
 import { FadeLoader } from 'react-spinners'
 import toast from 'react-hot-toast'
@@ -15,6 +16,8 @@ const Profile = () => {
         shopName: '',
         sub_district: ''
     })
+    const [showOldPassword, setShowOldPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
     const dispatch = useDispatch()
     const { userInfo, loader, successMessage } = useSelector(state => state.auth)
 
@@ -163,11 +166,45 @@ const Profile = () => {
                                 </div>
                                 <div className='flex flex-col w-full gap-1'>
                                     <label htmlFor="o_password">Old Password</label>
-                                    <input className='px-4 py-2 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]' type="password" placeholder='old password' name='old_password' id='o_password' />
+                                    <div className='relative'>
+                                        <input
+                                            className='w-full px-4 py-2 pr-10 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]'
+                                            type={showOldPassword ? 'text' : 'password'}
+                                            autoComplete='current-password'
+                                            placeholder='old password'
+                                            name='old_password'
+                                            id='o_password'
+                                        />
+                                        <button
+                                            type='button'
+                                            onClick={() => setShowOldPassword((prev) => !prev)}
+                                            className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200'
+                                            aria-label={showOldPassword ? 'Hide old password' : 'Show old password'}
+                                        >
+                                            {showOldPassword ? <FiEyeOff /> : <FiEye />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className='flex flex-col w-full gap-1'>
                                     <label htmlFor="n_password">New Password</label>
-                                    <input className='px-4 py-2 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]' type="password" placeholder='new password' name='new_password' id='n_password' />
+                                    <div className='relative'>
+                                        <input
+                                            className='w-full px-4 py-2 pr-10 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]'
+                                            type={showNewPassword ? 'text' : 'password'}
+                                            autoComplete='new-password'
+                                            placeholder='new password'
+                                            name='new_password'
+                                            id='n_password'
+                                        />
+                                        <button
+                                            type='button'
+                                            onClick={() => setShowNewPassword((prev) => !prev)}
+                                            className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200'
+                                            aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+                                        >
+                                            {showNewPassword ? <FiEyeOff /> : <FiEye />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <button className='bg-blue-500 hover:shadow-blue-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 mt-5 '>Submit</button>
                             </form>

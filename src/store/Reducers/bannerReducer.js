@@ -56,8 +56,44 @@ export const get_banner = createAsyncThunk(
     }
 )
 
+export const get_admin_banners = createAsyncThunk(
+    'banner/get_admin_banners',
+    async (_, { fulfillWithValue, rejectWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.get(`${api_url}/api/banner/admin/list`, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const delete_banner = createAsyncThunk(
+    'banner/delete_banner',
+    async (bannerId, { fulfillWithValue, rejectWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.delete(`${api_url}/api/banner/delete/${bannerId}`, config)
+            return fulfillWithValue({ ...data, bannerId })
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
 export const bannerReducer = createSlice({
-    name: 'category',
+    name: 'banner',
     initialState: {
         successMessage: '',
         errorMessage: '',
@@ -83,9 +119,20 @@ export const bannerReducer = createSlice({
             state.loader = false
             state.successMessage = payload.message
             state.banner = payload.banner
+            state.banners = [payload.banner, ...state.banners]
         },
         [get_banner.fulfilled]: (state, { payload }) => {
             state.banner = payload.banner
+        },
+        [get_admin_banners.fulfilled]: (state, { payload }) => {
+            state.banners = payload.banners
+        },
+        [delete_banner.rejected]: (state, { payload }) => {
+            state.errorMessage = payload.message
+        },
+        [delete_banner.fulfilled]: (state, { payload }) => {
+            state.successMessage = payload.message
+            state.banners = state.banners.filter((item) => item._id !== payload.bannerId)
         },
         [update_banner.pending]: (state, _) => {
             state.loader = true

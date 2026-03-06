@@ -174,7 +174,7 @@ export const admin_get_products = createAsyncThunk(
         }
         try {
             const { data } = await axios.get(
-                `${api_url}/api/admin/products-get?page=1&&searchValue=${searchValue}&&parPage=${parPage}`,
+                `${api_url}/api/admin/products-get?page=${page}&&searchValue=${searchValue}&&parPage=${parPage}`,
                 config
             )
             return fulfillWithValue(data)
@@ -255,6 +255,9 @@ export const productReducer = createSlice({
         [product_image_update.fulfilled]: (state, { payload }) => {
             state.product = payload.product
             state.successMessage = payload.message
+        },
+        [product_image_update.rejected]: (state, { payload }) => {
+            state.errorMessage = payload?.error
         },
         [delete_product.pending]: (state) => {
             state.loader = true

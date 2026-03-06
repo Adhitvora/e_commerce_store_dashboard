@@ -69,6 +69,9 @@ const Products = () => {
                   Stock
                 </th>
                 <th scope="col" className="py-3 px-4">
+                  Approval
+                </th>
+                <th scope="col" className="py-3 px-4">
                   Action
                 </th>
               </tr>
@@ -136,17 +139,32 @@ const Products = () => {
                     scope="row"
                     className="py-1 px-4 font-medium whitespace-nowrap"
                   >
+                    <span>{d.approval_status || "pending"}</span>
+                  </td>
+                  <td
+                    scope="row"
+                    className="py-1 px-4 font-medium whitespace-nowrap"
+                  >
                     <div className="flex justify-start items-center gap-4">
-                      <Link
-                        to={`/seller/dashboard/edit-product/${d._id}`}
-                        className="p-[6px] bg-yellow-500 rounded hover:shadow-lg hover:shadow-yellow-500/50"
-                      >
-                        <FaEdit />
-                      </Link>
+                      {d.approval_status === "approved" ? (
+                        <span
+                          title="Approved product cannot be edited"
+                          className="p-[6px] bg-slate-600 rounded opacity-60 cursor-not-allowed"
+                        >
+                          <FaEdit />
+                        </span>
+                      ) : (
+                        <Link
+                          to={`/seller/dashboard/edit-product/${d._id}`}
+                          className="p-[6px] bg-yellow-500 rounded hover:shadow-lg hover:shadow-yellow-500/50"
+                        >
+                          <FaEdit />
+                        </Link>
+                      )}
                       <Link className="p-[6px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50">
                         <FaEye />
                       </Link>
-                      <button
+                      {/* <button
                         onClick={() => deleteProductHandler(d._id)}
                         className="p-[6px] bg-red-500 rounded hover:shadow-lg hover:shadow-red-500/50"
                       >
@@ -158,7 +176,7 @@ const Products = () => {
                         className="p-[6px] bg-cyan-500 rounded hover:shadow-lg hover:shadow-cyan-500/50"
                       >
                         <GiKnightBanner />
-                      </Link>
+                      </Link> */}
                     </div>
                   </td>
                 </tr>

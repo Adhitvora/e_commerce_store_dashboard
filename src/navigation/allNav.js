@@ -4,6 +4,7 @@ import { FiUsers } from 'react-icons/fi'
 import { CiChat1 } from 'react-icons/ci'
 import { BsCurrencyDollar, BsChat } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
+import { GiKnightBanner } from 'react-icons/gi'
 import { MdOutlineInventory2 } from "react-icons/md"
 export const allNav = [
     {
@@ -64,6 +65,13 @@ export const allNav = [
     },
     {
         id: 8,
+        title: 'Banners',
+        icon: <GiKnightBanner />,
+        role: 'admin',
+        path: '/admin/dashboard/banners'
+    },
+    {
+        id: 9,
         title: 'Chat Seller',
         icon: <CiChat1 />,
         role: 'admin',

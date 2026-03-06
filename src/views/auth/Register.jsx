@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { AiOutlineGooglePlus, AiOutlineGithub } from 'react-icons/ai'
 import { FiFacebook } from 'react-icons/fi'
 import { CiTwitter } from 'react-icons/ci'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { PropagateLoader } from 'react-spinners'
 import { useDispatch, useSelector } from 'react-redux'
 import PhoneInput from 'react-phone-input-2'
@@ -26,6 +27,7 @@ const Register = () => {
         password: '',
         mobile: ''
     })
+    const [showPassword, setShowPassword] = useState(false)
 
     const inputHandle = (e) => {
         setSatate({
@@ -126,15 +128,26 @@ const Register = () => {
                         {/* Password */}
                         <div className='flex flex-col w-full gap-1 mb-3'>
                             <label>Password</label>
-                            <input
-                                onChange={inputHandle}
-                                value={state.password}
-                                type="password"
-                                name='password'
-                                required
-                                placeholder='Enter your password'
-                                className='px-3 py-2 outline-none border border-slate-700 bg-transparent rounded-md text-[#d0d2d6] focus:border-indigo-500'
-                            />
+                            <div className='relative'>
+                                <input
+                                    onChange={inputHandle}
+                                    value={state.password}
+                                    type={showPassword ? 'text' : 'password'}
+                                    name='password'
+                                    autoComplete='new-password'
+                                    required
+                                    placeholder='Enter your password'
+                                    className='w-full px-3 py-2 pr-10 outline-none border border-slate-700 bg-transparent rounded-md text-[#d0d2d6] focus:border-indigo-500'
+                                />
+                                <button
+                                    type='button'
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200'
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Terms */}
