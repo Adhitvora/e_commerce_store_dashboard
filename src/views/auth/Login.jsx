@@ -9,8 +9,9 @@ import toast from "react-hot-toast";
 import { PropagateLoader } from "react-spinners";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import axios from "axios";
 
-import { overrideStyle } from "../../utils/utils";
+import { api_url, overrideStyle } from "../../utils/utils";
 import { messageClear, seller_login } from "../../store/Reducers/authReducer";
 
 const Login = () => {
@@ -29,9 +30,17 @@ const Login = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [verificationAlert, setVerificationAlert] = useState("");
+  const [resendSuccess, setResendSuccess] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const isUnverifiedError = (message = "") => /verify your email/i.test(message);
 
   const submit = (e) => {
     e.preventDefault();
+    setVerificationAlert("");
+    setResendSuccess("");
 
     const credential = loginType === "email" ? state.email : "+" + state.mobile;
 
@@ -43,6 +52,41 @@ const Login = () => {
     );
   };
 
+  const resendVerificationEmail = async () => {
+    const email = state.email.trim();
+    if (!email) {
+      toast.error("Enter your email to resend verification link.");
+      return;
+    }
+
+    try {
+      setResendLoading(true);
+      await axios.post(`${api_url}/api/seller-resend-verification`, {
+        email,
+      });
+      setResendSuccess("Verification email sent successfully.");
+      toast.success("Verification email sent successfully.");
+      setResendCooldown(30);
+    } catch (error) {
+      const resendError =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Failed to resend verification email.";
+      toast.error(resendError);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return undefined;
+    const timer = setInterval(() => {
+      setResendCooldown((current) => (current > 0 ? current - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
@@ -51,7 +95,11 @@ const Login = () => {
     }
 
     if (errorMessage) {
-      toast.error(errorMessage);
+      if (isUnverifiedError(errorMessage)) {
+        setVerificationAlert("Please verify your email before logging in.");
+      } else {
+        toast.error(errorMessage);
+      }
       dispatch(messageClear());
     }
   }, [successMessage, errorMessage, dispatch, navigate]);
@@ -153,6 +201,25 @@ const Login = () => {
                 </button>
               </div>
             </div>
+
+            {verificationAlert && (
+              <div className="mb-4 rounded-md border border-amber-400 bg-amber-100 p-3 text-sm text-amber-900">
+                <p>{verificationAlert}</p>
+                <button
+                  type="button"
+                  onClick={resendVerificationEmail}
+                  disabled={resendLoading || resendCooldown > 0}
+                  className="mt-2 font-semibold text-amber-900 underline disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {resendCooldown > 0
+                    ? `Resend verification email in ${resendCooldown}s`
+                    : "Resend verification email."}
+                </button>
+                {resendSuccess && (
+                  <p className="mt-2 text-green-700">{resendSuccess}</p>
+                )}
+              </div>
+            )}
 
             <button
               disabled={loader}

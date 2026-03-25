@@ -3,15 +3,19 @@ import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { GiKnightBanner } from "react-icons/gi";
 import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 import Pagination from "../Pagination";
 import Search from "../components/Search";
 import {
   get_products,
   delete_product,
+  messageClear,
 } from "../../store/Reducers/productReducer";
 const Products = () => {
   const dispatch = useDispatch();
-  const { products, totalProduct } = useSelector((state) => state.product);
+  const { products, totalProduct, successMessage, errorMessage } = useSelector(
+    (state) => state.product,
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -31,6 +35,17 @@ const Products = () => {
     };
     dispatch(get_products(obj));
   }, [searchValue, currentPage, parPage]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(messageClear());
+    }
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(messageClear());
+    }
+  }, [successMessage, errorMessage, dispatch]);
 
   return (
     <div className="px-2 lg:px-7 pt-5 ">

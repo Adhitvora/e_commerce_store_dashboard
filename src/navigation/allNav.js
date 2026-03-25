@@ -106,13 +106,13 @@ export const allNav = [
     //     path: '/seller/dashboard/banners'
     // },
 
-    {
-        id: 12,
-        title: 'Discount Product',
-        icon: <RiProductHuntLine />,
-        role: 'seller',
-        path: '/seller/dashboard/discount-products'
-    },
+    // {
+    //     id: 12,
+    //     title: 'Discount Product',
+    //     icon: <RiProductHuntLine />,
+    //     role: 'seller',
+    //     path: '/seller/dashboard/discount-products'
+    // },
     {
         id: 13,
         title: 'Orders',

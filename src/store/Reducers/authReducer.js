@@ -48,10 +48,9 @@ export const logout = createAsyncThunk(
 
 export const seller_register = createAsyncThunk(
     'auth/seller_register',
-    async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+    async (info, { rejectWithValue, fulfillWithValue }) => {
         try {
             const { data } = await axios.post(`${api_url}/api/seller-register`, info, { withCredentials: true })
-            localStorage.setItem('accessToken', data.token)
             return fulfillWithValue(data)
         } catch (error) {
             return rejectWithValue(error.response.data)
@@ -170,7 +169,7 @@ export const authReducer = createSlice({
         },
         [seller_login.rejected]: (state, { payload }) => {
             state.loader = false
-            state.errorMessage = payload.error
+            state.errorMessage = payload?.error || payload?.message || 'Login failed'
         },
         [seller_login.fulfilled]: (state, { payload }) => {
             state.loader = false
@@ -183,13 +182,11 @@ export const authReducer = createSlice({
         },
         [seller_register.rejected]: (state, { payload }) => {
             state.loader = false
-            state.errorMessage = payload.error
+            state.errorMessage = payload?.error || payload?.message || 'Registration failed'
         },
         [seller_register.fulfilled]: (state, { payload }) => {
             state.loader = false
-            state.successMessage = payload.message
-            state.token = payload.token
-            state.role = returnRole(payload.token)
+            state.successMessage = payload?.message || 'Registration successful. Please verify your email.'
         },
         [get_user_info.fulfilled]: (state, { payload }) => {
             state.loader = false

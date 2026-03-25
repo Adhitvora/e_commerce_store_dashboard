@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { PropagateLoader } from "react-spinners";
 import toast from "react-hot-toast";
@@ -17,6 +17,7 @@ import { overrideStyle } from "../../utils/utils";
 const EditProduct = () => {
   const editor = useRef(null);
   const [content, setContent] = useState("");
+  const navigate = useNavigate();
 
   const { productId } = useParams();
   const dispatch = useDispatch();
@@ -75,6 +76,7 @@ const EditProduct = () => {
   };
 
   const [imageShow, setImageShow] = useState([]);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const changeImage = (img, files) => {
     if (isApproved) {
@@ -82,6 +84,7 @@ const EditProduct = () => {
       return;
     }
     if (files.length > 0) {
+      setShouldRedirect(true);
       dispatch(
         product_image_update({
           oldImage: img,
@@ -113,15 +116,27 @@ const EditProduct = () => {
   }, [categorys]);
 
   useEffect(() => {
+    let redirectTimer;
+
     if (errorMessage) {
       toast.error(errorMessage);
       dispatch(messageClear());
+      setShouldRedirect(false);
     }
     if (successMessage) {
       toast.success(successMessage);
       dispatch(messageClear());
+      if (shouldRedirect) {
+        redirectTimer = setTimeout(() => {
+          navigate("/seller/dashboard/products");
+        }, 800);
+      }
     }
-  }, [successMessage, errorMessage]);
+
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
+  }, [successMessage, errorMessage, shouldRedirect, dispatch, navigate]);
 
   const update = (e) => {
     e.preventDefault();
@@ -138,6 +153,7 @@ const EditProduct = () => {
       stock: state.stock,
       productId: productId,
     };
+    setShouldRedirect(true);
     dispatch(update_product(obj));
   };
 

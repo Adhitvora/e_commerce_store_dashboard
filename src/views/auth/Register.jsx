@@ -53,14 +53,15 @@ const Register = () => {
         if (successMessage) {
             toast.success(successMessage)
             dispatch(messageClear())
-            navigate('/')
+            const query = new URLSearchParams({ email: state.email }).toString()
+            navigate(`/seller/verify-pending?${query}`)
         }
 
         if (errorMessage) {
             toast.error(errorMessage)
             dispatch(messageClear())
         }
-    }, [successMessage, errorMessage, dispatch, navigate])
+    }, [successMessage, errorMessage, state.email, dispatch, navigate])
 
     return (
         <div className='min-w-screen min-h-screen bg-[#161d31] flex justify-center items-center'>
@@ -172,7 +173,7 @@ const Register = () => {
                         <div className='flex justify-center mb-3'>
                             <p>
                                 Already have an account?
-                                <Link to='/login' className='text-blue-400 ml-1'>Signin here</Link>
+                                <Link to='/seller/login' className='text-blue-400 ml-1'>Signin here</Link>
                             </p>
                         </div>
 

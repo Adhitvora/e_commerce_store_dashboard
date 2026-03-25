@@ -2,6 +2,8 @@ import { lazy } from 'react'
 const Success = lazy(() => import('../../views/Success'))
 const Login = lazy(() => import('../../views/auth/Login'))
 const Register = lazy(() => import('../../views/auth/Register'))
+const SellerVerifyPending = lazy(() => import('../../views/auth/SellerVerifyPending'))
+const SellerEmailVerify = lazy(() => import('../../views/auth/SellerEmailVerify'))
 const AdminLogin = lazy(() => import('../../views/auth/AdminLogin'))
 const Home = lazy(() => import('../../views/Home'))
 const UnAuthorized = lazy(() => import('../../views/UnAuthorized'))
@@ -15,8 +17,24 @@ const publicRoutes = [
         element: <Login />
     },
     {
+        path: '/seller/login',
+        element: <Login />
+    },
+    {
         path: '/register',
         element: <Register />
+    },
+    {
+        path: '/seller/verify-pending',
+        element: <SellerVerifyPending />
+    },
+    {
+        path: '/seller/email-verify',
+        element: <SellerEmailVerify />
+    },
+    {
+        path: '/email-verify',
+        element: <SellerEmailVerify />
     },
     {
         path: '/admin/login',

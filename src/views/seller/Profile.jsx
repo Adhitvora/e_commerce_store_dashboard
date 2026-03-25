@@ -6,6 +6,7 @@ import { PropagateLoader } from 'react-spinners'
 import { FadeLoader } from 'react-spinners'
 import toast from 'react-hot-toast'
 import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { overrideStyle } from '../../utils/utils'
 import { profile_image_upload, messageClear, profile_info_add } from '../../store/Reducers/authReducer'
 import { create_razorpay_account } from '../../store/Reducers/sellerReducer'
@@ -19,7 +20,9 @@ const Profile = () => {
     const [showOldPassword, setShowOldPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const dispatch = useDispatch()
-    const { userInfo, loader, successMessage } = useSelector(state => state.auth)
+    const navigate = useNavigate()
+    const { userInfo, loader, successMessage, errorMessage } = useSelector(state => state.auth)
+    const [shouldRedirect, setShouldRedirect] = useState(false)
 
     const add_image = (e) => {
         if (e.target.files.length > 0) {
@@ -29,15 +32,33 @@ const Profile = () => {
         }
     }
     useEffect(() => {
+        let redirectTimer
+
+        if (errorMessage) {
+            toast.error(errorMessage)
+            dispatch(messageClear())
+            setShouldRedirect(false)
+        }
+
         if (successMessage) {
             toast.success(successMessage)
-            messageClear()
+            dispatch(messageClear())
+            if (shouldRedirect) {
+                redirectTimer = setTimeout(() => {
+                    navigate('/seller/dashboard')
+                }, 800)
+            }
         }
-    }, [successMessage])
+
+        return () => {
+            if (redirectTimer) clearTimeout(redirectTimer)
+        }
+    }, [successMessage, errorMessage, shouldRedirect, dispatch, navigate])
 
 
     const add = (e) => {
         e.preventDefault()
+        setShouldRedirect(true)
         dispatch(profile_info_add(state))
     }
 
