@@ -3,6 +3,34 @@ import jwt from 'jwt-decode'
 import axios from 'axios'
 import { api_url } from '../../utils/utils'
 
+const normalizeAccountStatus = (payload = {}) => {
+    const explicitStatus = payload.accountStatus || payload.userInfo?.accountStatus
+    const sellerStatus = payload.userInfo?.status
+
+    if (explicitStatus) {
+        return explicitStatus
+    }
+
+    if (sellerStatus === 'deactive') {
+        return 'inactive'
+    }
+
+    return sellerStatus || ''
+}
+
+const normalizeAdminRemark = (payload = {}) => {
+    return payload.adminRemark || payload.userInfo?.adminRemark || ''
+}
+
+const normalizeRestrictedState = (payload = {}) => {
+    return Boolean(
+        payload.restricted ||
+        payload.userInfo?.isRestricted ||
+        normalizeAccountStatus(payload) === 'inactive' ||
+        payload.userInfo?.verificationStatus === 'rejected'
+    )
+}
+
 export const admin_login = createAsyncThunk(
     'auth/admin_login',
     async (info, { rejectWithValue, fulfillWithValue }) => {
@@ -22,6 +50,30 @@ export const seller_login = createAsyncThunk(
         try {
             const { data } = await axios.post(`${api_url}/api/seller-login`, info, { withCredentials: true })
             localStorage.setItem('accessToken', data.token)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const complete_seller_verification = createAsyncThunk(
+    'auth/complete_seller_verification',
+    async (formData, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.post(
+                `${api_url}/api/seller/complete-verification`,
+                formData,
+                config
+            )
             return fulfillWithValue(data)
         } catch (error) {
             return rejectWithValue(error.response.data)
@@ -141,6 +193,12 @@ export const authReducer = createSlice({
         errorMessage: '',
         loader: false,
         userInfo: '',
+        verificationStatus: '',
+        accountStatus: '',
+        adminRemark: '',
+        restricted: false,
+        requiresVerification: false,
+        waitingApproval: false,
         role: returnRole(localStorage.getItem('accessToken')),
         token: localStorage.getItem('accessToken')
     },
@@ -166,6 +224,7 @@ export const authReducer = createSlice({
         },
         [seller_login.pending]: (state, _) => {
             state.loader = true
+            state.errorMessage = ''
         },
         [seller_login.rejected]: (state, { payload }) => {
             state.loader = false
@@ -176,6 +235,12 @@ export const authReducer = createSlice({
             state.successMessage = payload.message
             state.token = payload.token
             state.role = returnRole(payload.token)
+            state.verificationStatus = payload.verificationStatus || ''
+            state.accountStatus = normalizeAccountStatus(payload)
+            state.adminRemark = normalizeAdminRemark(payload)
+            state.restricted = normalizeRestrictedState(payload)
+            state.requiresVerification = Boolean(payload.requiresVerification)
+            state.waitingApproval = Boolean(payload.waitingApproval)
         },
         [seller_register.pending]: (state, _) => {
             state.loader = true
@@ -192,6 +257,12 @@ export const authReducer = createSlice({
             state.loader = false
             state.userInfo = payload.userInfo
             state.role = payload.userInfo.role
+            state.verificationStatus = payload.verificationStatus || payload.userInfo?.verificationStatus || ''
+            state.accountStatus = normalizeAccountStatus(payload)
+            state.adminRemark = normalizeAdminRemark(payload)
+            state.restricted = normalizeRestrictedState(payload)
+            state.requiresVerification = Boolean(payload.requiresVerification)
+            state.waitingApproval = Boolean(payload.waitingApproval)
         },
         [profile_image_upload.pending]: (state, _) => {
             state.loader = true
@@ -200,6 +271,10 @@ export const authReducer = createSlice({
             state.loader = false
             state.userInfo = payload.userInfo
             state.successMessage = payload.message
+            state.verificationStatus = payload.userInfo?.verificationStatus || state.verificationStatus
+            state.accountStatus = normalizeAccountStatus(payload)
+            state.adminRemark = normalizeAdminRemark(payload)
+            state.restricted = normalizeRestrictedState(payload)
         },
         [profile_info_add.pending]: (state, _) => {
             state.loader = true
@@ -208,6 +283,29 @@ export const authReducer = createSlice({
             state.loader = false
             state.userInfo = payload.userInfo
             state.successMessage = payload.message
+            state.verificationStatus = payload.userInfo?.verificationStatus || state.verificationStatus
+            state.accountStatus = normalizeAccountStatus(payload)
+            state.adminRemark = normalizeAdminRemark(payload)
+            state.restricted = normalizeRestrictedState(payload)
+        },
+        [complete_seller_verification.pending]: (state) => {
+            state.loader = true
+            state.errorMessage = ''
+        },
+        [complete_seller_verification.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error || payload?.message || 'Verification submission failed'
+        },
+        [complete_seller_verification.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.userInfo = payload.seller
+            state.successMessage = payload.message
+            state.verificationStatus = payload.seller?.verificationStatus || 'pending_admin'
+            state.accountStatus = normalizeAccountStatus(payload)
+            state.adminRemark = ''
+            state.restricted = false
+            state.requiresVerification = false
+            state.waitingApproval = true
         },
     }
 

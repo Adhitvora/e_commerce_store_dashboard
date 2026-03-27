@@ -6,7 +6,14 @@ import adminImage from '../assets/admin.jpg'
 
 const Header = ({ showSidebar, setShowSidebar }) => {
 
-    const { userInfo } = useSelector(state => state.auth)
+    const { userInfo, role, accountStatus, restricted } = useSelector(state => state.auth)
+    const sellerInactive =
+        role === 'seller' && (
+            accountStatus === 'inactive' ||
+            restricted ||
+            userInfo?.status === 'deactive' ||
+            userInfo?.verificationStatus === 'rejected'
+        )
 
     return (
         <div className='fixed top-0 left-0 w-full py-5 px-2 lg:px-7 z-40'>
@@ -15,7 +22,13 @@ const Header = ({ showSidebar, setShowSidebar }) => {
                     <span><FaList /></span>
                 </div>
                 <div className='hidden md:block'>
-                    <input className='px-3 py-2 outline-none border bg-transparent border-slate-700 rounded-md text-[#d0d2d6] focus:border-indigo-500 overflow-hidden' type="text" name='search' placeholder='search' />
+                    <input
+                        disabled={sellerInactive}
+                        className={`px-3 py-2 outline-none border bg-transparent border-slate-700 rounded-md text-[#d0d2d6] overflow-hidden ${sellerInactive ? 'opacity-40 cursor-not-allowed' : 'focus:border-indigo-500'}`}
+                        type="text"
+                        name='search'
+                        placeholder='search'
+                    />
                 </div>
                 <div className='flex justify-center items-center gap-8 relative'>
                     <div className='flex justify-center items-center'>

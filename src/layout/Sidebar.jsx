@@ -12,9 +12,17 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { role } = useSelector(state => state.auth)
+  const { role, accountStatus, restricted, userInfo } = useSelector(state => state.auth)
   const { pathname } = useLocation()
   const [allNav, setAllNav] = useState([])
+  const sellerInactive =
+    role === 'seller' && (
+      accountStatus === 'inactive' ||
+      restricted ||
+      userInfo?.status === 'deactive' ||
+      userInfo?.verificationStatus === 'rejected'
+    )
+
   useEffect(() => {
     const navs = getNavs(role)
     setAllNav(navs)
@@ -31,16 +39,42 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
         </div>
         <div className='px-[16px]'>
           <ul>
+            {sellerInactive && (
+              <li>
+                <Link
+                  to='/seller/verification'
+                  className='bg-blue-500 text-white px-[12px] py-[9px] rounded-sm flex justify-start items-center gap-[12px] w-full mb-3'
+                >
+                  <span>Complete Verification</span>
+                </Link>
+              </li>
+            )}
             {
               allNav.map((n, i) => <li key={i}>
-                <Link to={n.path} className={`${pathname === n.path ? 'bg-slate-600 shadow-indigo-500/30 text-white duration-500 ' : 'text-[#d0d2d6] font-normal duration-200'} px-[12px] py-[9px] rounded-sm flex justify-start items-center gap-[12px] hover:pl-4 transition-all w-full mb-1 `}>
+                <Link
+                  to={sellerInactive ? pathname : n.path}
+                  onClick={(e) => {
+                    if (sellerInactive) {
+                      e.preventDefault()
+                    }
+                  }}
+                  className={`${pathname === n.path ? 'bg-slate-600 shadow-indigo-500/30 text-white duration-500 ' : 'text-[#d0d2d6] font-normal duration-200'} ${sellerInactive ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'hover:pl-4'} px-[12px] py-[9px] rounded-sm flex justify-start items-center gap-[12px] transition-all w-full mb-1 `}
+                >
                   <span>{n.icon}</span>
                   <span>{n.title}</span>
                 </Link>
               </li>)
             }
             <li>
-              <button onClick={() => dispatch(logout({ navigate, role }))} className='text-[#d0d2d6] font-normal duration-200 px-[12px] py-[9px] rounded-sm flex justify-start items-center gap-[12px] hover:pl-4 transition-all w-full mb-1 '>
+              <button
+                onClick={() => {
+                  if (!sellerInactive) {
+                    dispatch(logout({ navigate, role }))
+                  }
+                }}
+                disabled={sellerInactive}
+                className={`text-[#d0d2d6] font-normal duration-200 px-[12px] py-[9px] rounded-sm flex justify-start items-center gap-[12px] transition-all w-full mb-1 ${sellerInactive ? 'opacity-40 cursor-not-allowed' : 'hover:pl-4'}`}
+              >
                 <span><BiLogInCircle /></span>
                 <span>Logout</span>
               </button>

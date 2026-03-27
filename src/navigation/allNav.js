@@ -120,13 +120,13 @@ export const allNav = [
         role: 'seller',
         path: '/seller/dashboard/orders'
     },
-    {
-        id: 14,
-        title: 'Payments',
-        icon: <BsCurrencyDollar />,
-        role: 'seller',
-        path: '/seller/dashboard/payments'
-    },
+    // {
+    //     id: 14,
+    //     title: 'Payments',
+    //     icon: <BsCurrencyDollar />,
+    //     role: 'seller',
+    //     path: '/seller/dashboard/payments'
+    // },
     // {
     //     id: 15,
     //     title: 'Chat Customer',

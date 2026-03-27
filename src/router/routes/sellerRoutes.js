@@ -12,17 +12,30 @@ const EditProduct = lazy(() => import("../../views/seller/EditProduct"))
 const OrderDetails = lazy(() => import("../../views/seller/OrderDetails"))
 const Pending = lazy(() => import("../../views/Pending"))
 const Deactive = lazy(() => import("../../views/Deactive"))
+const SellerVerification = lazy(() => import("../../views/seller/SellerVerification"))
 export const sellerRoutes = [
 
     {
         path: '/seller/account-pending',
         element: <Pending />,
-        ability: 'seller'
+        role: 'seller',
+        visibility: ['pending', 'active', 'deactive'],
+        allowPendingApproval: true
     },
     {
         path: '/seller/account-deactive',
         element: <Deactive />,
-        ability: 'seller'
+        role: 'seller',
+        visibility: ['deactive']
+    },
+    {
+        path: '/seller/verification',
+        element: <SellerVerification />,
+        role: 'seller',
+        visibility: ['pending', 'active', 'deactive'],
+        allowPendingDetails: true,
+        allowInactive: true,
+        onlyWhenVerificationIncomplete: true
     },
 
     {

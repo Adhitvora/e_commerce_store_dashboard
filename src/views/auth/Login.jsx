@@ -18,9 +18,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loader, errorMessage, successMessage } = useSelector(
-    (state) => state.auth,
-  );
+  const { loader, errorMessage } = useSelector((state) => state.auth);
 
   const [loginType, setLoginType] = useState("email");
 
@@ -37,19 +35,44 @@ const Login = () => {
 
   const isUnverifiedError = (message = "") => /verify your email/i.test(message);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setVerificationAlert("");
     setResendSuccess("");
 
     const credential = loginType === "email" ? state.email : "+" + state.mobile;
 
-    dispatch(
-      seller_login({
-        credential,
-        password: state.password,
-      }),
-    );
+    try {
+      const response = await dispatch(
+        seller_login({
+          credential,
+          password: state.password,
+        }),
+      ).unwrap();
+
+      if (response.requiresVerification) {
+        navigate("/seller/verification");
+        return;
+      }
+
+      if (response.accountStatus === "inactive" || response.restricted) {
+        setVerificationAlert("Your account is deactivated");
+        navigate("/seller/verification");
+        return;
+      }
+
+      if (response.waitingApproval) {
+        setVerificationAlert("Your account is under admin review");
+        navigate("/seller/account-pending");
+        return;
+      }
+
+      toast.success(response.message || "Login success");
+      dispatch(messageClear());
+      navigate("/");
+    } catch (_) {
+      // rejected state is handled in the error effect
+    }
   };
 
   const resendVerificationEmail = async () => {
@@ -88,12 +111,6 @@ const Login = () => {
   }, [resendCooldown]);
 
   useEffect(() => {
-    if (successMessage) {
-      toast.success(successMessage);
-      dispatch(messageClear());
-      navigate("/");
-    }
-
     if (errorMessage) {
       if (isUnverifiedError(errorMessage)) {
         setVerificationAlert("Please verify your email before logging in.");
@@ -102,7 +119,7 @@ const Login = () => {
       }
       dispatch(messageClear());
     }
-  }, [successMessage, errorMessage, dispatch, navigate]);
+  }, [errorMessage, dispatch]);
 
   return (
     <div className="min-w-screen min-h-screen bg-[#161d31] flex justify-center items-center">

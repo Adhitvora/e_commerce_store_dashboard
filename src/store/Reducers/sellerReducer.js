@@ -69,13 +69,35 @@ export const seller_status_update = createAsyncThunk(
         }
 
         try {
-            const { data } = await axios.post(
-                `${api_url}/api/seller-status-update`,
-                info,
+            const { data } = await axios.patch(
+                `${api_url}/api/admin/seller/${info.sellerId}/status`,
+                {
+                    remark: info.remark
+                },
                 config
             )
             return data
         } catch (error) {
+            if (error?.response?.status === 404) {
+                try {
+                    const fallbackPayload = {
+                        sellerId: info.sellerId,
+                        status: info.action === 'activate' ? 'active' : 'deactive',
+                        remark: info.remark
+                    }
+
+                    const { data } = await axios.post(
+                        `${api_url}/api/seller-status-update`,
+                        fallbackPayload,
+                        config
+                    )
+
+                    return data
+                } catch (fallbackError) {
+                    return rejectWithValue(fallbackError.response.data)
+                }
+            }
+
             return rejectWithValue(error.response.data)
         }
     }
@@ -264,9 +286,18 @@ export const sellerReducer = createSlice({
             })
 
             // UPDATE STATUS
+            .addCase(seller_status_update.pending, (state) => {
+                state.loader = true
+                state.errorMessage = ''
+            })
             .addCase(seller_status_update.fulfilled, (state, { payload }) => {
+                state.loader = false
                 state.seller = payload.seller
                 state.successMessage = payload.message
+            })
+            .addCase(seller_status_update.rejected, (state, { payload }) => {
+                state.loader = false
+                state.errorMessage = payload?.error || payload?.message || 'Unable to update seller status'
             })
 
             // ACTIVE SELLERS
