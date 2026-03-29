@@ -1,0 +1,14 @@
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# Leave API requests alone if this subdomain ever proxies or serves them.
+RewriteRule ^api(/|$) - [L]
+
+# Serve existing files and directories directly.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Send all other requests to the React app entrypoint.
+RewriteRule ^ index.html [L,QSA]
