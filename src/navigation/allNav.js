@@ -2,7 +2,7 @@ import { AiFillDashboard, AiOutlineShoppingCart, AiOutlinePlus } from 'react-ico
 import { BiCategory, BiLoaderCircle } from 'react-icons/bi'
 import { FiUsers } from 'react-icons/fi'
 import { CiChat1 } from 'react-icons/ci'
-import { BsCurrencyDollar, BsChat } from 'react-icons/bs'
+import { BsCurrencyDollar } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
 import { GiKnightBanner } from 'react-icons/gi'
 import { MdOutlineInventory2 } from "react-icons/md"
@@ -76,6 +76,13 @@ export const allNav = [
         icon: <CiChat1 />,
         role: 'admin',
         path: '/admin/dashboard/chat'
+    },
+    {
+        id: 10,
+        title: 'Admin Security',
+        icon: <FiUsers />,
+        role: 'admin',
+        path: '/admin/dashboard/account'
     },
     {
         id: 9,

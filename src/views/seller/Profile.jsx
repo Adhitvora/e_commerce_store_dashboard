@@ -8,8 +8,10 @@ import toast from 'react-hot-toast'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { overrideStyle } from '../../utils/utils'
-import { profile_image_upload, messageClear, profile_info_add } from '../../store/Reducers/authReducer'
-import { create_razorpay_account } from '../../store/Reducers/sellerReducer'
+import { profile_image_upload, messageClear, profile_info_add, resetAuthState, seller_change_password } from '../../store/Reducers/authReducer'
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
+
 const Profile = () => {
     const [state, setState] = useState({
         division: '',
@@ -17,12 +19,19 @@ const Profile = () => {
         shopName: '',
         sub_district: ''
     })
+    const [passwordState, setPasswordState] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    })
     const [showOldPassword, setShowOldPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const { userInfo, loader, successMessage, errorMessage } = useSelector(state => state.auth)
+    const { userInfo, loader, passwordLoader, successMessage, errorMessage } = useSelector(state => state.auth)
     const [shouldRedirect, setShouldRedirect] = useState(false)
+    const [authAction, setAuthAction] = useState('')
 
     const add_image = (e) => {
         if (e.target.files.length > 0) {
@@ -38,28 +47,66 @@ const Profile = () => {
             toast.error(errorMessage)
             dispatch(messageClear())
             setShouldRedirect(false)
+            setAuthAction('')
         }
 
         if (successMessage) {
             toast.success(successMessage)
             dispatch(messageClear())
-            if (shouldRedirect) {
+            if (authAction === 'password') {
+                dispatch(resetAuthState())
+                navigate('/login')
+            } else if (shouldRedirect) {
                 redirectTimer = setTimeout(() => {
                     navigate('/seller/dashboard')
                 }, 800)
             }
+            setPasswordState({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            })
+            setShowOldPassword(false)
+            setShowNewPassword(false)
+            setShowConfirmPassword(false)
+            setAuthAction('')
         }
 
         return () => {
             if (redirectTimer) clearTimeout(redirectTimer)
         }
-    }, [successMessage, errorMessage, shouldRedirect, dispatch, navigate])
+    }, [successMessage, errorMessage, shouldRedirect, authAction, dispatch, navigate])
 
 
     const add = (e) => {
         e.preventDefault()
         setShouldRedirect(true)
+        setAuthAction('profile')
         dispatch(profile_info_add(state))
+    }
+
+    const passwordInputHandle = (e) => {
+        setPasswordState({
+            ...passwordState,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const changePasswordSubmit = (e) => {
+        e.preventDefault()
+
+        if (!passwordRegex.test(passwordState.newPassword)) {
+            toast.error('Password must be at least 8 characters and include uppercase, lowercase, number and special character')
+            return
+        }
+
+        if (passwordState.newPassword !== passwordState.confirmPassword) {
+            toast.error('New password and confirm password do not match')
+            return
+        }
+
+        setAuthAction('password')
+        dispatch(seller_change_password(passwordState))
     }
 
     const inputHandle = (e) => {
@@ -180,11 +227,7 @@ const Profile = () => {
                     <div className='w-full pl-0 md:pl-7 mt-6 md:mt-0  '>
                         <div className='bg-[#283046] rounded-md text-[#d0d2d6] p-4'>
                             <h1 className='text-[#d0d2d6] text-lg mb-3 font-semibold'>Change Password</h1>
-                            <form>
-                                <div className='flex flex-col w-full gap-1 mb-3'>
-                                    <label htmlFor="email">Email</label>
-                                    <input className='px-4 py-2 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]' type="email" placeholder='email' name='email' id='email' />
-                                </div>
+                            <form onSubmit={changePasswordSubmit}>
                                 <div className='flex flex-col w-full gap-1'>
                                     <label htmlFor="o_password">Old Password</label>
                                     <div className='relative'>
@@ -193,8 +236,11 @@ const Profile = () => {
                                             type={showOldPassword ? 'text' : 'password'}
                                             autoComplete='current-password'
                                             placeholder='old password'
-                                            name='old_password'
+                                            value={passwordState.currentPassword}
+                                            onChange={passwordInputHandle}
+                                            name='currentPassword'
                                             id='o_password'
+                                            required
                                         />
                                         <button
                                             type='button'
@@ -214,8 +260,11 @@ const Profile = () => {
                                             type={showNewPassword ? 'text' : 'password'}
                                             autoComplete='new-password'
                                             placeholder='new password'
-                                            name='new_password'
+                                            value={passwordState.newPassword}
+                                            onChange={passwordInputHandle}
+                                            name='newPassword'
                                             id='n_password'
+                                            required
                                         />
                                         <button
                                             type='button'
@@ -227,7 +276,36 @@ const Profile = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <button className='bg-blue-500 hover:shadow-blue-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 mt-5 '>Submit</button>
+                                <p className='text-xs text-slate-400 mt-2'>Use at least 8 characters with uppercase, lowercase, number and special character.</p>
+                                <div className='flex flex-col w-full gap-1 mt-4'>
+                                    <label htmlFor="c_password">Confirm New Password</label>
+                                    <div className='relative'>
+                                        <input
+                                            className='w-full px-4 py-2 pr-10 focus:border-indigo-500 outline-none bg-[#283046] border border-slate-700 rounded-md text-[#d0d2d6]'
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            autoComplete='new-password'
+                                            placeholder='confirm new password'
+                                            value={passwordState.confirmPassword}
+                                            onChange={passwordInputHandle}
+                                            name='confirmPassword'
+                                            id='c_password'
+                                            required
+                                        />
+                                        <button
+                                            type='button'
+                                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                            className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200'
+                                            aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                                        >
+                                            {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <button disabled={passwordLoader} className='bg-blue-500 hover:shadow-blue-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 mt-5 min-w-[180px]'>
+                                    {
+                                        passwordLoader ? <PropagateLoader color='#fff' cssOverride={overrideStyle} /> : 'Update Password'
+                                    }
+                                </button>
                             </form>
                         </div>
                     </div>

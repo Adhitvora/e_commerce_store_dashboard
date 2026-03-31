@@ -149,6 +149,103 @@ export const profile_info_add = createAsyncThunk(
     }
 )
 
+export const seller_change_password = createAsyncThunk(
+    'auth/seller_change_password',
+    async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.put(`${api_url}/api/seller/change-password`, info, config)
+            localStorage.removeItem('accessToken')
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const admin_change_password = createAsyncThunk(
+    'auth/admin_change_password',
+    async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.put(`${api_url}/api/admin/change-password`, info, config)
+            localStorage.removeItem('accessToken')
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const admin_update_profile = createAsyncThunk(
+    'auth/admin_update_profile',
+    async (image, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.put(`${api_url}/api/admin/update-profile`, image, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const create_admin = createAsyncThunk(
+    'auth/create_admin',
+    async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.post(`${api_url}/api/admin/create`, info, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const update_admin_username = createAsyncThunk(
+    'auth/update_admin_username',
+    async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const { data } = await axios.put(`${api_url}/api/admin/update-username`, info, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
 
 
 
@@ -192,6 +289,7 @@ export const authReducer = createSlice({
         successMessage: '',
         errorMessage: '',
         loader: false,
+        passwordLoader: false,
         userInfo: '',
         verificationStatus: '',
         accountStatus: '',
@@ -206,6 +304,22 @@ export const authReducer = createSlice({
         messageClear: (state, _) => {
             state.errorMessage = ""
             state.successMessage = ""
+        },
+        resetAuthState: (state, _) => {
+            localStorage.removeItem('accessToken')
+            state.successMessage = ''
+            state.errorMessage = ''
+            state.loader = false
+            state.passwordLoader = false
+            state.userInfo = ''
+            state.verificationStatus = ''
+            state.accountStatus = ''
+            state.adminRemark = ''
+            state.restricted = false
+            state.requiresVerification = false
+            state.waitingApproval = false
+            state.role = ''
+            state.token = ''
         }
     },
     extraReducers: {
@@ -307,8 +421,70 @@ export const authReducer = createSlice({
             state.requiresVerification = false
             state.waitingApproval = true
         },
+        [seller_change_password.pending]: (state) => {
+            state.passwordLoader = true
+            state.errorMessage = ''
+        },
+        [seller_change_password.rejected]: (state, { payload }) => {
+            state.passwordLoader = false
+            state.errorMessage = payload?.error || payload?.message || 'Unable to change password'
+        },
+        [seller_change_password.fulfilled]: (state, { payload }) => {
+            state.passwordLoader = false
+            state.successMessage = payload?.message || 'Password changed successfully'
+        },
+        [admin_change_password.pending]: (state) => {
+            state.passwordLoader = true
+            state.errorMessage = ''
+        },
+        [admin_change_password.rejected]: (state, { payload }) => {
+            state.passwordLoader = false
+            state.errorMessage = payload?.error || payload?.message || 'Unable to change password'
+        },
+        [admin_change_password.fulfilled]: (state, { payload }) => {
+            state.passwordLoader = false
+            state.successMessage = payload?.message || 'Password changed successfully'
+        },
+        [admin_update_profile.pending]: (state) => {
+            state.loader = true
+            state.errorMessage = ''
+        },
+        [admin_update_profile.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error || payload?.message || 'Unable to update profile'
+        },
+        [admin_update_profile.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload?.message || 'Profile updated successfully'
+            state.userInfo = payload.userInfo
+        },
+        [create_admin.pending]: (state) => {
+            state.loader = true
+            state.errorMessage = ''
+        },
+        [create_admin.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error || payload?.message || 'Unable to create admin'
+        },
+        [create_admin.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload?.message || 'Admin created successfully'
+        },
+        [update_admin_username.pending]: (state) => {
+            state.loader = true
+            state.errorMessage = ''
+        },
+        [update_admin_username.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error || payload?.message || 'Unable to update username'
+        },
+        [update_admin_username.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload?.message || 'Username updated successfully'
+            state.userInfo = payload.userInfo
+        },
     }
 
 })
-export const { messageClear } = authReducer.actions
+export const { messageClear, resetAuthState } = authReducer.actions
 export default authReducer.reducer

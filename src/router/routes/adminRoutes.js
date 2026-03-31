@@ -11,6 +11,7 @@ const Sellers = lazy(() => import("../../views/admin/Sellers"))
 const PaymentRequest = lazy(() => import("../../views/admin/PaymentRequest"))
 const Chat = lazy(() => import("../../views/admin/ChatSeller"))
 const OrderDetails = lazy(() => import("../../views/admin/OrderDetails"))
+const AdminAccount = lazy(() => import("../../views/admin/AdminAccount"))
 export const adminRoutes = [
     {
         path: 'admin/dashboard',
@@ -82,6 +83,11 @@ export const adminRoutes = [
     {
         path: '/admin/dashboard/banners',
         element: <Banners />,
+        role: 'admin'
+    },
+    {
+        path: '/admin/dashboard/account',
+        element: <AdminAccount />,
         role: 'admin'
     }
 ]

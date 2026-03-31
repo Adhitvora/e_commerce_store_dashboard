@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   get_messages,
@@ -56,13 +56,15 @@ const Chat = () => {
   }, [adminId, dispatch]);
 
   /* ---------------- FILTER MESSAGES ---------------- */
-  const filteredMessages = selectedUser
-    ? messages.filter(
-        (m) =>
-          m.senderId === selectedUser.id ||
-          m.receiverId === selectedUser.id
-      )
-    : [];
+  const filteredMessages = useMemo(() => {
+    return selectedUser
+      ? messages.filter(
+          (m) =>
+            m.senderId === selectedUser.id ||
+            m.receiverId === selectedUser.id
+        )
+      : [];
+  }, [messages, selectedUser]);
 
   /* ---------------- SEND MESSAGE ---------------- */
   const handleSend = (e) => {
@@ -122,6 +124,7 @@ const Chat = () => {
           {users?.map((u, i) => {
 
             const isActive = selectedUser?.id === u.id;
+            const displayName = u?.name || u?.email || "Unknown User";
 
             return (
               <div
@@ -155,7 +158,7 @@ const Chat = () => {
                     border-2 border-slate-600 
                     bg-gradient-to-br from-indigo-500 to-purple-600 
                     text-white font-bold text-lg uppercase shadow-md">
-      {u?.name ? u.name.charAt(0) : "U"}
+      {displayName.charAt(0)}
     </div>
   )}
 </div>
@@ -168,7 +171,7 @@ const Chat = () => {
 
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-semibold truncate">
-                        {u.name}
+                        {displayName}
                       </h3>
 
                       <span className="text-[10px] uppercase bg-blue-600 px-2 py-[2px] rounded-full">
