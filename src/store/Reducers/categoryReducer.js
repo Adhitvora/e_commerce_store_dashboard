@@ -41,6 +41,47 @@ export const get_category = createAsyncThunk(
     }
 )
 
+export const categoryUpdate = createAsyncThunk(
+    'category/categoryUpdate',
+    async ({ categoryId, category }, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const formData = new FormData()
+            formData.append('name', category.name)
+            if (category.image) {
+                formData.append('image', category.image)
+            }
+            const { data } = await axios.put(`${api_url}/api/category/${categoryId}`, formData, config)
+            return fulfillWithValue(data)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const categoryDelete = createAsyncThunk(
+    'category/categoryDelete',
+    async (categoryId, { rejectWithValue, fulfillWithValue, getState }) => {
+        const token = getState().auth.token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axios.delete(`${api_url}/api/category/${categoryId}`, config)
+            return fulfillWithValue({ ...data, categoryId })
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
 
 
 export const categoryReducer = createSlice({
@@ -49,6 +90,7 @@ export const categoryReducer = createSlice({
         successMessage: '',
         errorMessage: '',
         loader: false,
+        deleteLoaderId: '',
         categorys: [],
         totalCategory: 0
     },
@@ -64,16 +106,45 @@ export const categoryReducer = createSlice({
         },
         [categoryAdd.rejected]: (state, { payload }) => {
             state.loader = false
-            state.errorMessage = payload.error
+            state.errorMessage = payload?.error || payload?.message
         },
         [categoryAdd.fulfilled]: (state, { payload }) => {
             state.loader = false
             state.successMessage = payload.message
-            state.categorys = [...state.categorys, payload.category]
+            state.categorys = [payload.category, ...state.categorys]
+            state.totalCategory = state.totalCategory + 1
         },
         [get_category.fulfilled]: (state, { payload }) => {
             state.totalCategory = payload.totalCategory
             state.categorys = payload.categorys
+        },
+        [get_category.rejected]: (state, { payload }) => {
+            state.errorMessage = payload?.error || payload?.message
+        },
+        [categoryUpdate.pending]: (state, _) => {
+            state.loader = true
+        },
+        [categoryUpdate.rejected]: (state, { payload }) => {
+            state.loader = false
+            state.errorMessage = payload?.error || payload?.message
+        },
+        [categoryUpdate.fulfilled]: (state, { payload }) => {
+            state.loader = false
+            state.successMessage = payload.message
+            state.categorys = state.categorys.map((item) => item._id === payload.category._id ? payload.category : item)
+        },
+        [categoryDelete.pending]: (state, { meta }) => {
+            state.deleteLoaderId = meta.arg
+        },
+        [categoryDelete.rejected]: (state, { payload }) => {
+            state.deleteLoaderId = ''
+            state.errorMessage = payload?.error || payload?.message
+        },
+        [categoryDelete.fulfilled]: (state, { payload }) => {
+            state.deleteLoaderId = ''
+            state.successMessage = payload.message
+            state.categorys = state.categorys.filter((item) => item._id !== payload.categoryId)
+            state.totalCategory = Math.max(0, state.totalCategory - 1)
         },
     }
 
