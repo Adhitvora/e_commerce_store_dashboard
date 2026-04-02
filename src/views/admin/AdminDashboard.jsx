@@ -119,7 +119,7 @@ const AdminDashboard = () => {
   return (
     <div className="px-2 md:px-7 py-5">
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7">
-        <div className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3">
+        <Link to="/admin/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">₹{totalSale}</h2>
             <span className="text-md font-medium">Total Sales</span>
@@ -127,8 +127,8 @@ const AdminDashboard = () => {
           <div className="w-[46px] h-[47px] rounded-full bg-[#28c76f1f] flex justify-center items-center text-xl">
             <BsCurrencyDollar className="text-[#28c76f] shadow-lg" />
           </div>
-        </div>
-        <div className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3">
+        </Link>
+        <Link to="/admin/products-approval" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">{totalProduct}</h2>
             <span className="text-md font-medium">Products</span>
@@ -136,8 +136,8 @@ const AdminDashboard = () => {
           <div className="w-[46px] h-[47px] rounded-full bg-[#e000e81f] flex justify-center items-center text-xl">
             <RiProductHuntLine className="text-[#cd00e8] shadow-lg" />
           </div>
-        </div>
-        <div className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3">
+        </Link>
+        <Link to="/admin/dashboard/sellers" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">{totalSeller}</h2>
             <span className="text-md font-medium">Sellers</span>
@@ -145,8 +145,8 @@ const AdminDashboard = () => {
           <div className="w-[46px] h-[47px] rounded-full bg-[#00cfe81f] flex justify-center items-center text-xl">
             <FaUsers className="text-[#00cfe8] shadow-lg" />
           </div>
-        </div>
-        <div className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3">
+        </Link>
+        <Link to="/admin/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">{totalOrder}</h2>
             <span className="text-md font-medium">Orders</span>
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
           <div className="w-[46px] h-[47px] rounded-full bg-[#7367f01f] flex justify-center items-center text-xl">
             <AiOutlineShoppingCart className="text-[#7367f0] shadow-lg" />
           </div>
-        </div>
+        </Link>
       </div>
       <div className="w-full flex flex-wrap mt-7">
         <div className="w-full lg:w-7/12 lg:pr-3">
@@ -245,6 +245,9 @@ const AdminDashboard = () => {
                   Delivery Status
                 </th>
                 <th scope="col" className="py-3 px-4">
+                  Date
+                </th>
+                <th scope="col" className="py-3 px-4">
                   Active
                 </th>
               </tr>
@@ -275,6 +278,12 @@ const AdminDashboard = () => {
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
                     <span>{d.delivery_status}</span>
+                  </td>
+                  <td
+                    scope="row"
+                    className="py-3 px-4 font-medium whitespace-nowrap"
+                  >
+                    {d.date ? moment(d.date).format('DD MMM YYYY') : ''}
                   </td>
                   <td
                     scope="row"

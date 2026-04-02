@@ -7,6 +7,8 @@ import OrderReducer from './Reducers/OrderReducer'
 import PaymentReducer from './Reducers/PaymentReducer'
 import dashboardIndexReducer from './Reducers/dashboardIndexReducer'
 import bannerReducer from './Reducers/bannerReducer'
+import commissionReducer from './Reducers/commissionReducer'
+import shippingSettingsReducer from './Reducers/shippingSettingsReducer'
 const rootReducer = {
     auth: authReducer,
     category: categoryReducer,
@@ -16,6 +18,8 @@ const rootReducer = {
     order: OrderReducer,
     payment: PaymentReducer,
     dashboardIndex: dashboardIndexReducer,
-    banner : bannerReducer
+    banner : bannerReducer,
+    commission: commissionReducer,
+    shippingSettings: shippingSettingsReducer
 }
 export default rootReducer

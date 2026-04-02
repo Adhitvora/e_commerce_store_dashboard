@@ -111,6 +111,28 @@ const AddProduct = () => {
 
   const add = (e) => {
     e.preventDefault();
+
+    if (images.length === 0) {
+      toast.error('At least 1 product image is required');
+      return;
+    }
+    if (!state.name.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
+    if (!category) {
+      toast.error('Please select a category');
+      return;
+    }
+    if (!state.price || Number(state.price) <= 0) {
+      toast.error('Price must be greater than 0');
+      return;
+    }
+    if (!state.stock || Number(state.stock) < 0) {
+      toast.error('Stock is required');
+      return;
+    }
+
     setShouldRedirect(true);
     const formData = new FormData();
     formData.append("name", state.name);

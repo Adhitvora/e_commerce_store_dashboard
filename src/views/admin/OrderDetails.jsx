@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
+import moment from 'moment'
 import { get_admin_order, admin_order_status_update, messageClear } from '../../store/Reducers/OrderReducer'
 
 const ORDER_STATUS_OPTIONS = ['PENDING', 'ACCEPT', 'REJECT']
@@ -116,7 +117,7 @@ const OrderDetails = () => {
                 <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 border-b border-slate-700'>
                     <div>
                         <h2 className='text-xl text-[#d0d2d6] font-semibold'>Order Details</h2>
-                        <p className='text-sm text-slate-400 mt-1'>#{order._id} | {order.date}</p>
+                        <p className='text-sm text-slate-400 mt-1'>#{order._id} | {order.date ? moment(order.date).format('DD MMM YYYY, HH:mm') : ''}</p>
                     </div>
                     <div className='flex flex-col sm:flex-row flex-wrap gap-3'>
                         <select
@@ -161,7 +162,18 @@ const OrderDetails = () => {
                             <h3 className='text-lg font-semibold mb-3'>Payment Summary</h3>
                             <div className='text-sm space-y-2'>
                                 <p><span className='text-slate-400'>Payment Status:</span> {order.payment_status || '-'}</p>
-                                <p><span className='text-slate-400'>Total Price:</span> ₹{order.price}</p>
+                                {order.product_total > 0 && (
+                                    <p><span className='text-slate-400'>Product Total:</span> ₹{order.product_total}</p>
+                                )}
+                                {(order.commission_percent > 0 || order.commission_amount > 0) && (
+                                    <>
+                                        <p><span className='text-slate-400'>Commission ({order.commission_percent || 0}%):</span> <span className='text-yellow-400'>₹{order.commission_amount || 0}</span></p>
+                                        <p><span className='text-slate-400'>Seller Earning:</span> <span className='text-green-400'>₹{order.seller_earning || 0}</span></p>
+                                    </>
+                                )}
+                                <div className='border-t border-slate-700 pt-2 mt-2'>
+                                    <p className='text-base font-semibold'><span className='text-slate-400'>Total Price:</span> ₹{order.price}</p>
+                                </div>
                             </div>
                         </div>
 

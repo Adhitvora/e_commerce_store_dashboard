@@ -69,7 +69,9 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
               <button
                 onClick={() => {
                   if (!sellerInactive) {
-                    dispatch(logout({ navigate, role }))
+                    if (window.confirm('Are you sure you want to logout?')) {
+                      dispatch(logout({ navigate, role }))
+                    }
                   }
                 }}
                 disabled={sellerInactive}

@@ -5,7 +5,7 @@ import { CiChat1 } from 'react-icons/ci'
 import { BsCurrencyDollar } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
 import { GiKnightBanner } from 'react-icons/gi'
-import { MdOutlineInventory2 } from "react-icons/md"
+import { MdOutlineInventory2, MdOutlineLocalShipping } from "react-icons/md"
 export const allNav = [
     {
         id: 1,
@@ -83,6 +83,20 @@ export const allNav = [
         icon: <FiUsers />,
         role: 'admin',
         path: '/admin/dashboard/account'
+    },
+    {
+        id: 11,
+        title: 'Commission Settings',
+        icon: <BsCurrencyDollar />,
+        role: 'admin',
+        path: '/admin/settings/commission'
+    },
+    {
+        id: 12,
+        title: 'Shipping Settings',
+        icon: <MdOutlineLocalShipping />,
+        role: 'admin',
+        path: '/admin/settings/shipping'
     },
     {
         id: 9,

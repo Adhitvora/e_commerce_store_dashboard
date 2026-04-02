@@ -176,8 +176,11 @@ const Products = () => {
                           <FaEdit />
                         </Link>
                       )}
-                      <Link className="p-[6px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50">
-                        <FaEye />
+                      <Link
+                        to={`/seller/dashboard/edit-product/${d._id}`}
+                        className="p-[6px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50"
+                        title="View product details"
+                      >                        <FaEye />
                       </Link>
                       {/* <button
                         onClick={() => deleteProductHandler(d._id)}

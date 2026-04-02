@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 import {
     messageClear,
@@ -158,7 +159,7 @@ const OrderDetails = () => {
                             <p className="text-[11px] tracking-[0.2em] uppercase text-slate-300/80">Seller Order View</p>
                             <h2 className="mt-1 text-2xl font-bold text-white">Order Details</h2>
                             <p className="mt-2 text-sm text-slate-300">Order ID: #{order?.orderId || order?._id}</p>
-                            <p className="text-sm text-slate-300">{order?.date}</p>
+                            <p className="text-sm text-slate-300">{order?.date ? moment(order.date).format('DD MMM YYYY, HH:mm') : ''}</p>
                             <div className="mt-4 flex flex-wrap gap-2">
                                 <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getTheme(currentOrderStatus)}`}>
                                     ORDER: {LABELS[currentOrderStatus] || currentOrderStatus}
@@ -245,7 +246,15 @@ const OrderDetails = () => {
                             <h3 className="mb-3 text-lg font-semibold text-white">Payment Summary</h3>
                             <div className="space-y-2 text-sm text-slate-300">
                                 <p><span className="text-slate-400">Payment:</span> {order?.payment_status?.toUpperCase()}</p>
-                                <p><span className="text-slate-400">Total:</span> Rs. {order?.price}</p>
+                                <p><span className="text-slate-400">Order Value:</span> ₹{order?.price}</p>
+                                {(order?.commission_percent > 0 || order?.commission_amount > 0) && (
+                                    <>
+                                        <p><span className="text-slate-400">Commission ({order?.commission_percent || 0}%):</span> <span className="text-yellow-400">₹{order?.commission_amount || 0}</span></p>
+                                        <div className="border-t border-slate-700 pt-2 mt-2">
+                                            <p className="text-green-400 font-semibold">Your Earning: ₹{order?.seller_earning || order?.price}</p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
