@@ -113,7 +113,7 @@ const Orders = () => {
                     <td className="py-4 px-4 font-medium whitespace-nowrap">
                       #{o._id}
                     </td>
-                    <td className="py-4 px-4">₹{o.price}</td>
+                    <td className="py-4 px-4">₹{o.final_total || o.price}</td>
                     <td className="py-4 px-4">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(o.payment_status)}`}
@@ -174,7 +174,7 @@ const Orders = () => {
                                 >
                                   <td className="py-2 px-3">{o._id}</td>
                                   <td className="py-2 px-3">{so._id}</td>
-                                  <td className="py-2 px-3">₹{so.price}</td>
+                                  <td className="py-2 px-3">₹{so.final_total || so.price}</td>
                                   <td className="py-2 px-3">
                                     {so.payment_status}
                                   </td>

@@ -14,9 +14,8 @@ const SellerDashboard = () => {
   const {
     totalSale,
     totalOrder,
-    totalProduct,
-    totalPendingOrder,
-    totalSeller,
+    netEarnings,
+    totalShipping,
     recentOrders,
     recentMessage,
   } = useSelector((state) => state.dashboardIndex);
@@ -117,25 +116,34 @@ const SellerDashboard = () => {
   return (
     <div className="px-2 md:px-7 py-5">
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7">
-        <Link to="/seller/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
+        <Link
+          to="/seller/dashboard/orders"
+          className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors"
+        >
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">₹{totalSale}</h2>
-            <span className="text-md font-medium">Total Sales</span>
+            <span className="text-md font-medium">Order Value</span>
           </div>
           <div className="w-[46px] h-[47px] rounded-full bg-[#28c76f1f] flex justify-center items-center text-xl">
             <BsCurrencyDollar className="text-[#28c76f] shadow-lg" />
           </div>
         </Link>
-        <Link to="/seller/dashboard/products" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
+        <Link
+          to="/seller/dashboard/orders"
+          className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors"
+        >
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
-            <h2 className="text-3xl font-bold">{totalProduct}</h2>
-            <span className="text-md font-medium">Products</span>
+            <h2 className="text-3xl font-bold">₹{netEarnings}</h2>
+            <span className="text-md font-medium">Net Earnings</span>
           </div>
           <div className="w-[46px] h-[47px] rounded-full bg-[#e000e81f] flex justify-center items-center text-xl">
             <RiProductHuntLine className="text-[#cd00e8] shadow-lg" />
           </div>
         </Link>
-        <Link to="/seller/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
+        <Link
+          to="/seller/dashboard/orders"
+          className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors"
+        >
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">{totalOrder}</h2>
             <span className="text-md font-medium">Orders</span>
@@ -144,10 +152,13 @@ const SellerDashboard = () => {
             <AiOutlineShoppingCart className="text-[#00cfe8] shadow-lg" />
           </div>
         </Link>
-        <Link to="/seller/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
+        <Link
+          to="/seller/dashboard/orders"
+          className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors"
+        >
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
-            <h2 className="text-3xl font-bold">{totalPendingOrder}</h2>
-            <span className="text-md font-medium">Pending orders</span>
+            <h2 className="text-3xl font-bold">₹{totalShipping}</h2>
+            <span className="text-md font-medium">Shipping</span>
           </div>
           <div className="w-[46px] h-[47px] rounded-full bg-[#7367f01f] flex justify-center items-center text-xl">
             <AiOutlineShoppingCart className="text-[#7367f0] shadow-lg" />
@@ -263,7 +274,7 @@ const SellerDashboard = () => {
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    ₹{d.price}
+                    ₹{d.final_total || d.price}
                   </td>
                   <td
                     scope="row"

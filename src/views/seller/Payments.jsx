@@ -21,12 +21,12 @@ const Payments = () => {
     const { successMessage,
         errorMessage,
         loader,
-        pendingWithdrows,
-        successWithdrows,
+        pendingWithdrows = [],
+        successWithdrows = [],
         totalAmount,
         withdrowAmount,
         pendingAmount,
-        availableAmount } = useSelector(state => state.payment)
+        availableAmount } = useSelector(state => state.payment || {})
 
     const Row = ({ index, style }) => {
         return (
@@ -55,8 +55,10 @@ const Payments = () => {
     }
 
     useEffect(() => {
-        dispatch(get_seller_payemt_details(userInfo._id))
-    }, [])
+        if (userInfo && userInfo._id) {
+            dispatch(get_seller_payemt_details(userInfo._id))
+        }
+    }, [dispatch, userInfo])
 
     useEffect(() => {
         if (successMessage) {
@@ -144,7 +146,7 @@ const Payments = () => {
                                     style={{ minWidth: '340px', overflowX: 'hidden' }}
                                     className='List'
                                     height={350}
-                                    itemCount={pendingWithdrows.length}
+                                    itemCount={pendingWithdrows?.length || 0}
                                     itemSize={35}
                                     outerElementType={outerElementType}
                                 >
@@ -169,7 +171,7 @@ const Payments = () => {
                                     style={{ minWidth: '340px', overflowX: 'hidden' }}
                                     className='List'
                                     height={350}
-                                    itemCount={successWithdrows.length}
+                                    itemCount={successWithdrows?.length || 0}
                                     itemSize={35}
                                     outerElementType={outerElementType}
                                 >

@@ -17,8 +17,8 @@ const AdminDashboard = () => {
   const {
     totalSale,
     totalOrder,
-    totalProduct,
     totalSeller,
+    totalAdminRevenue,
     recentOrders,
     recentMessage,
   } = useSelector((state) => state.dashboardIndex);
@@ -122,16 +122,16 @@ const AdminDashboard = () => {
         <Link to="/admin/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
             <h2 className="text-3xl font-bold">₹{totalSale}</h2>
-            <span className="text-md font-medium">Total Sales</span>
+            <span className="text-md font-medium">Customer Revenue</span>
           </div>
           <div className="w-[46px] h-[47px] rounded-full bg-[#28c76f1f] flex justify-center items-center text-xl">
             <BsCurrencyDollar className="text-[#28c76f] shadow-lg" />
           </div>
         </Link>
-        <Link to="/admin/products-approval" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
+        <Link to="/admin/dashboard/orders" className="flex justify-between items-center p-5 bg-[#283046] rounded-md gap-3 hover:bg-[#2f3a52] transition-colors">
           <div className="flex flex-col justify-start items-start text-[#d0d2d6]">
-            <h2 className="text-3xl font-bold">{totalProduct}</h2>
-            <span className="text-md font-medium">Products</span>
+            <h2 className="text-3xl font-bold">₹{totalAdminRevenue}</h2>
+            <span className="text-md font-medium">Admin Earnings</span>
           </div>
           <div className="w-[46px] h-[47px] rounded-full bg-[#e000e81f] flex justify-center items-center text-xl">
             <RiProductHuntLine className="text-[#cd00e8] shadow-lg" />
@@ -265,7 +265,7 @@ const AdminDashboard = () => {
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    ₹{d.price}
+                    ₹{d.final_total || d.price}
                   </td>
                   <td
                     scope="row"

@@ -161,18 +161,23 @@ const OrderDetails = () => {
                         <div className='bg-[#1f2638] rounded-md border border-slate-700 p-4'>
                             <h3 className='text-lg font-semibold mb-3'>Payment Summary</h3>
                             <div className='text-sm space-y-2'>
+                                {order.subtotal > 0 && (
+                                    <p><span className='text-slate-400'>Subtotal:</span> ₹{order.subtotal}</p>
+                                )}
+                                {order.discount_amount > 0 && (
+                                    <p><span className='text-slate-400'>Discount:</span> -₹{order.discount_amount}</p>
+                                )}
                                 <p><span className='text-slate-400'>Payment Status:</span> {order.payment_status || '-'}</p>
+                                <p><span className='text-slate-400'>Payment Type:</span> {(order.payment_type || '-').toUpperCase()}</p>
                                 {order.product_total > 0 && (
                                     <p><span className='text-slate-400'>Product Total:</span> ₹{order.product_total}</p>
                                 )}
-                                {(order.commission_percent > 0 || order.commission_amount > 0) && (
-                                    <>
-                                        <p><span className='text-slate-400'>Commission ({order.commission_percent || 0}%):</span> <span className='text-yellow-400'>₹{order.commission_amount || 0}</span></p>
-                                        <p><span className='text-slate-400'>Seller Earning:</span> <span className='text-green-400'>₹{order.seller_earning || 0}</span></p>
-                                    </>
-                                )}
+                                <p><span className='text-slate-400'>Shipping Fee:</span> ₹{order.shipping_fee || 0}</p>
+                                <p><span className='text-slate-400'>Commission ({order.commission_percent || 0}%):</span> <span className='text-yellow-400'>₹{order.commission_amount || 0}</span></p>
+                                <p><span className='text-slate-400'>Seller Earning:</span> <span className='text-green-400'>₹{order.seller_earning || 0}</span></p>
+                                <p><span className='text-slate-400'>Admin Earning:</span> <span className='text-cyan-400'>₹{order.admin_earning || 0}</span></p>
                                 <div className='border-t border-slate-700 pt-2 mt-2'>
-                                    <p className='text-base font-semibold'><span className='text-slate-400'>Total Price:</span> ₹{order.price}</p>
+                                    <p className='text-base font-semibold'><span className='text-slate-400'>Total Price:</span> ₹{order.final_total || order.price}</p>
                                 </div>
                             </div>
                         </div>

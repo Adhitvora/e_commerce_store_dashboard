@@ -245,16 +245,21 @@ const OrderDetails = () => {
                         <div className="rounded-xl border border-slate-700 bg-[#1f2b42] p-4">
                             <h3 className="mb-3 text-lg font-semibold text-white">Payment Summary</h3>
                             <div className="space-y-2 text-sm text-slate-300">
-                                <p><span className="text-slate-400">Payment:</span> {order?.payment_status?.toUpperCase()}</p>
-                                <p><span className="text-slate-400">Order Value:</span> ₹{order?.price}</p>
-                                {(order?.commission_percent > 0 || order?.commission_amount > 0) && (
-                                    <>
-                                        <p><span className="text-slate-400">Commission ({order?.commission_percent || 0}%):</span> <span className="text-yellow-400">₹{order?.commission_amount || 0}</span></p>
-                                        <div className="border-t border-slate-700 pt-2 mt-2">
-                                            <p className="text-green-400 font-semibold">Your Earning: ₹{order?.seller_earning || order?.price}</p>
-                                        </div>
-                                    </>
+                                {order?.subtotal > 0 && (
+                                    <p><span className="text-slate-400">Subtotal:</span> ₹{order.subtotal}</p>
                                 )}
+                                {order?.discount_amount > 0 && (
+                                    <p><span className="text-slate-400">Discount:</span> -₹{order.discount_amount}</p>
+                                )}
+                                <p><span className="text-slate-400">Payment:</span> {order?.payment_status?.toUpperCase()}</p>
+                                <p><span className="text-slate-400">Payment Type:</span> {(order?.payment_type || '-').toUpperCase()}</p>
+                                <p><span className="text-slate-400">Product Total:</span> ₹{order?.product_total || order?.price}</p>
+                                <p><span className="text-slate-400">Shipping Fee:</span> ₹{order?.shipping_fee || 0}</p>
+                                <p><span className="text-slate-400">Order Value:</span> ₹{order?.final_total || order?.price}</p>
+                                <p><span className="text-slate-400">Commission ({order?.commission_percent || 0}%):</span> <span className="text-yellow-400">₹{order?.commission_amount || 0}</span></p>
+                                <div className="border-t border-slate-700 pt-2 mt-2">
+                                    <p className="text-green-400 font-semibold">Your Earning: ₹{order?.seller_earning || order?.final_total || order?.price}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
