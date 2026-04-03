@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 import {
     messageClear,
@@ -10,6 +9,7 @@ import {
     seller_order_status_update,
     seller_delivery_status_update
 } from '../../store/Reducers/OrderReducer'
+import { formatDateTime } from '../../utils/dateFormatter'
 
 const DELIVERY_TRANSITIONS = {
     PENDING: ['PROCESSING'],
@@ -159,7 +159,7 @@ const OrderDetails = () => {
                             <p className="text-[11px] tracking-[0.2em] uppercase text-slate-300/80">Seller Order View</p>
                             <h2 className="mt-1 text-2xl font-bold text-white">Order Details</h2>
                             <p className="mt-2 text-sm text-slate-300">Order ID: #{order?.orderId || order?._id}</p>
-                            <p className="text-sm text-slate-300">{order?.date ? moment(order.date).format('DD MMM YYYY, HH:mm') : ''}</p>
+                            <p className="text-sm text-slate-300">{formatDateTime(order?.date)}</p>
                             <div className="mt-4 flex flex-wrap gap-2">
                                 <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getTheme(currentOrderStatus)}`}>
                                     ORDER: {LABELS[currentOrderStatus] || currentOrderStatus}

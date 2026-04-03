@@ -5,12 +5,12 @@ import { FaUsers } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import Chart from "react-apexcharts";
-import moment from "moment";
 import { useSelector, useDispatch } from "react-redux";
 import seller from "../../assets/seller.png";
 
 import { get_admin_dashboard_index_data } from "../../store/Reducers/dashboardIndexReducer";
 import { FiEye } from "react-icons/fi";
+import { formatDateTime } from "../../utils/dateFormatter";
 
 const AdminDashboard = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                           {m.senderName}
                         </Link>
                         <time className="mb-1 text-sm font-normal sm:order-last sm:mb-0">
-                          {moment(m.createdAt).startOf("hour").fromNow()}
+                          {formatDateTime(m.createdAt)}
                         </time>
                       </div>
                       <div className="p-2 text-xs font-normal bg-slate-700 rounded-lg border border-slate-800">
@@ -283,7 +283,7 @@ const AdminDashboard = () => {
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    {d.date ? moment(d.date).format('DD MMM YYYY') : ''}
+                    {formatDateTime(d.date)}
                   </td>
                   <td
                     scope="row"

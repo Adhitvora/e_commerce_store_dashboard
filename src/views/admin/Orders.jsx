@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Pagination from "../Pagination";
 import { useSelector, useDispatch } from "react-redux";
 import { get_admin_orders } from "../../store/Reducers/OrderReducer";
+import { formatDateTime } from "../../utils/dateFormatter";
 
 const statusClass = () => {
   return "bg-[#1f2d44] text-[#d0d2d6] border border-slate-600";
@@ -127,7 +128,7 @@ const Orders = () => {
                         {o.delivery_status}
                       </span>
                     </td>
-                    <td className="py-4 px-4 whitespace-nowrap">{o.date}</td>
+                    <td className="py-4 px-4 whitespace-nowrap">{formatDateTime(o.date)}</td>
                     <td className="py-4 px-4 text-center">
                       <div className="flex justify-around items-center gap-4">
                         <Link

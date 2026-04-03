@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
+import { formatDateTime } from "../../utils/dateFormatter";
 
 const ProductDetailsModal = ({
   product,
@@ -83,13 +84,13 @@ const ProductDetailsModal = ({
                 <b>Status:</b> {product.approval_status}
               </p>
               <p>
-                <b>Created:</b> {new Date(product.createdAt).toLocaleString()}
+                <b>Created:</b> {formatDateTime(product.createdAt)}
               </p>
 
               {product.approvedAt && (
                 <p>
                   <b>Approved:</b>{" "}
-                  {new Date(product.approvedAt).toLocaleString()}
+                  {formatDateTime(product.approvedAt)}
                 </p>
               )}
 

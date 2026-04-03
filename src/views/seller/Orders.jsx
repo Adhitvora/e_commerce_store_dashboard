@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { FaEdit, FaEye, FaTrash } from 'react-icons/fa'
+import { FaEye } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import Pagination from '../Pagination'
 import Search from '../components/Search'
 import { useSelector, useDispatch } from 'react-redux'
 import { get_seller_orders } from '../../store/Reducers/OrderReducer'
+import { formatDateTime } from '../../utils/dateFormatter'
 const Orders = () => {
 
     const dispatch = useDispatch()
@@ -56,7 +57,7 @@ const Orders = () => {
                                             }
                                         </span>
                                     </td>
-                                    <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>₹{d.date}</td>
+                                    <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>{formatDateTime(d.date)}</td>
                                     <td scope='row' className='py-3 px-4 font-medium whitespace-nowrap'>
                                         <Link to={`/seller/dashboard/order/details/${d._id}`} className='p-[6px] w-[30px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50 flex justify-center items-center'><FaEye /></Link>
                                     </td>

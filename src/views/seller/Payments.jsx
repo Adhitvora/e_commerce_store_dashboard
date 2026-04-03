@@ -1,10 +1,10 @@
 import React, { forwardRef, useEffect, useState } from 'react'
 import { BsCurrencyDollar } from 'react-icons/bs'
 import toast from 'react-hot-toast'
-import moment from 'moment'
 import { FixedSizeList as List } from 'react-window'
 import { useSelector, useDispatch } from 'react-redux'
 import { get_seller_payemt_details, send_withdrowal_request, messageClear } from '../../store/Reducers/PaymentReducer'
+import { formatDateTime } from '../../utils/dateFormatter'
 function handleOnWheel({ deltaY }) {
     console.log('handleOnWheel', deltaY)
 }
@@ -36,7 +36,7 @@ const Payments = () => {
                 <div className='w-[25%] p-2 whitespace-nowrap'>
                     <span className='py-[1px] px-[5px] bg-slate-700 text-blue-500 rounded-md text-xs'>{pendingWithdrows[index]?.status}</span>
                 </div>
-                <div className='w-[25%] p-2 whitespace-nowrap'>{moment(pendingWithdrows[index]?.createdAt).format('LL')}</div>
+                <div className='w-[25%] p-2 whitespace-nowrap'>{formatDateTime(pendingWithdrows[index]?.createdAt)}</div>
             </div>
         )
     }
@@ -49,7 +49,7 @@ const Payments = () => {
                 <div className='w-[25%] p-2 whitespace-nowrap'>
                     <span className='py-[1px] px-[5px] bg-slate-700 text-blue-500 rounded-md text-xs'>{successWithdrows[index]?.status}</span>
                 </div>
-                <div className='w-[25%] p-2 whitespace-nowrap'>{moment(successWithdrows[index]?.createdAt).format('LL')}</div>
+                <div className='w-[25%] p-2 whitespace-nowrap'>{formatDateTime(successWithdrows[index]?.createdAt)}</div>
             </div>
         )
     }

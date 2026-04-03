@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
-import moment from 'moment'
 import { get_admin_order, admin_order_status_update, messageClear } from '../../store/Reducers/OrderReducer'
+import { formatDateTime } from '../../utils/dateFormatter'
 
 const ORDER_STATUS_OPTIONS = ['PENDING', 'ACCEPT', 'REJECT']
 
@@ -117,7 +117,7 @@ const OrderDetails = () => {
                 <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 border-b border-slate-700'>
                     <div>
                         <h2 className='text-xl text-[#d0d2d6] font-semibold'>Order Details</h2>
-                        <p className='text-sm text-slate-400 mt-1'>#{order._id} | {order.date ? moment(order.date).format('DD MMM YYYY, HH:mm') : ''}</p>
+                        <p className='text-sm text-slate-400 mt-1'>#{order._id} | {formatDateTime(order.date)}</p>
                     </div>
                     <div className='flex flex-col sm:flex-row flex-wrap gap-3'>
                         <select

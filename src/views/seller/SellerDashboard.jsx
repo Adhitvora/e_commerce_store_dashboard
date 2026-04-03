@@ -7,8 +7,8 @@ import Chart from "react-apexcharts";
 import customer from "../../assets/seller.png";
 import { useSelector, useDispatch } from "react-redux";
 import { get_seller_dashboard_index_data } from "../../store/Reducers/dashboardIndexReducer";
-import moment from "moment";
 import { FiEye } from "react-icons/fi";
+import { formatDateTime } from "../../utils/dateFormatter";
 const SellerDashboard = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const {
@@ -200,7 +200,7 @@ const SellerDashboard = () => {
                           {m.senderName}
                         </Link>
                         <time className="mb-1 text-sm font-normal sm:order-last sm:mb-0">
-                          {moment(m.createdAt).startOf("hour").fromNow()}
+                          {formatDateTime(m.createdAt)}
                         </time>
                       </div>
                       <div className="p-2 text-xs font-normal bg-slate-700 rounded-lg border border-slate-800">
@@ -285,7 +285,7 @@ const SellerDashboard = () => {
                     scope="row"
                     className="py-3 px-4 font-medium whitespace-nowrap"
                   >
-                    {d.date ? moment(d.date).format('DD MMM YYYY') : ''}
+                    {formatDateTime(d.date)}
                   </td>
                   <td
                     scope="row"
