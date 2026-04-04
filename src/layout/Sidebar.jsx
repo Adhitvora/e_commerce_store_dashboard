@@ -35,7 +35,7 @@ const Sidebar = ({ showSidebar, setShowSidebar }) => {
         className={`fixed duration-200 ${!showSidebar ? "invisible" : "visible"} w-screen h-screen bg-[#22292f80] top-0 left-0 z-10`}
       ></div>
       <div
-        className={`overflow-scroll w-[260px] fixed bg-[#283046] z-50 top-0 h-screen shadow-[0_0_15px_0_rgb(34_41_47_/_5%)] transition-all ${showSidebar ? "left-0" : "-left-[260px] lg:left-0"}`}
+        className={`overflow-scroll no-scrollbar w-[260px] fixed bg-[#283046] z-50 top-0 h-screen shadow-[0_0_15px_0_rgb(34_41_47_/_5%)] transition-all ${showSidebar ? "left-0" : "-left-[260px] lg:left-0"}`}
       >
         <div className="h-[70px] flex justify-center items-center">
           <Link to="/" className="w-[180px] h-[60px]">
