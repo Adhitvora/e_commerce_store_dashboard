@@ -146,7 +146,7 @@ const EditProduct = () => {
     }
     const obj = {
       name: state.name,
-      description: state.description,
+      description: content,
       discount: state.discount,
       price: state.price,
       brand: state.brand,
@@ -333,7 +333,7 @@ const EditProduct = () => {
                     value={content}
                     tabIndex={1}
                     onBlur={(newContent) => setContent(newContent)}
-                    onChange={() => {}}
+                    onChange={(newContent) => setContent(newContent)}
                   />
                 </div>
               </div>
