@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
 import { get_admin_order, admin_order_status_update, messageClear } from '../../store/Reducers/OrderReducer'
 import { formatDateTime } from '../../utils/dateFormatter'
+import ProductImage from '../../components/ProductImage'
 
 const ORDER_STATUS_OPTIONS = ['PENDING', 'ACCEPT', 'REJECT']
 
@@ -187,7 +188,12 @@ const OrderDetails = () => {
                             <div className='space-y-3'>
                                 {order.products && order.products.map((p, i) => (
                                     <div key={i} className='flex gap-3 items-center'>
-                                        <img className='w-[55px] h-[55px] rounded object-cover border border-slate-700' src={p.images[0]} alt="" />
+                                        <ProductImage
+                                            alt={p.name}
+                                            className='w-[55px] rounded border border-slate-700'
+                                            imgClassName='p-1.5'
+                                            src={p.images?.[0]}
+                                        />
                                         <div className='text-sm'>
                                             <h4 className='font-medium text-[#d0d2d6]'>{p.name}</h4>
                                             <p className='text-slate-400'>Brand: {p.brand} | Qty: {p.quantity}</p>
@@ -213,7 +219,12 @@ const OrderDetails = () => {
                                         <div className='space-y-2'>
                                             {o.products?.map((p, idx) => (
                                                 <div key={idx} className='flex gap-3 items-center'>
-                                                    <img className='w-[50px] h-[50px] rounded object-cover border border-slate-700' src={p.images[0]} alt="" />
+                                                    <ProductImage
+                                                        alt={p.name}
+                                                        className='w-[50px] rounded border border-slate-700'
+                                                        imgClassName='p-1.5'
+                                                        src={p.images?.[0]}
+                                                    />
                                                     <div className='text-sm'>
                                                         <h5 className='font-medium text-[#d0d2d6]'>{p.name}</h5>
                                                         <p className='text-slate-400'>Brand: {p.brand} | Qty: {p.quantity}</p>

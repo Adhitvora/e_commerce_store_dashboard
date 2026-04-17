@@ -10,6 +10,7 @@ import {
   get_product_full_details,
 } from "../../store/Reducers/productReducer";
 import ProductDetailsModal from "../components/ProductDetailsModal";
+import ProductImage from "../../components/ProductImage";
 
 const ProductApproval = () => {
   const dispatch = useDispatch();
@@ -88,10 +89,11 @@ const ProductApproval = () => {
                   <td className="py-2 px-4 text-left">{i + 1}</td>
 
                   <td className="py-2 px-4 text-left">
-                    <img
-                      className="w-[45px] h-[45px] object-cover rounded"
-                      src={d.images[0]}
-                      alt=""
+                    <ProductImage
+                      alt={d.name}
+                      className="w-[45px] rounded-md border border-slate-700"
+                      imgClassName="p-1"
+                      src={d.images?.[0]}
                     />
                   </td>
 

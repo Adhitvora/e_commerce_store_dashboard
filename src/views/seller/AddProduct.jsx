@@ -8,8 +8,19 @@ import toast from "react-hot-toast";
 import { PropagateLoader } from "react-spinners";
 import JoditEditor from "jodit-react";
 import { overrideStyle } from "../../utils/utils";
+import ProductImage from "../../components/ProductImage";
+import ProductImageCropModal from "../../components/ProductImageCropModal";
 import { get_category } from "../../store/Reducers/categoryReducer";
 import { add_product, messageClear } from "../../store/Reducers/productReducer";
+import {
+  PRODUCT_IMAGE_ACCEPT,
+  PRODUCT_IMAGE_HELPER_TEXT,
+  buildCroppedProductImagePreview,
+  createProductImagePreviewBatch,
+  getProductImageThemeBackground,
+  revokeProductImagePreview,
+  revokeProductImagePreviews,
+} from "../../utils/productImage";
 
 const AddProduct = () => {
   const editor = useRef(null);
@@ -70,39 +81,67 @@ const AddProduct = () => {
   const [images, setImages] = useState([]);
   const [imageShow, setImageShow] = useState([]);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const imageShowRef = useRef([]);
+  const cropSessionRef = useRef(null);
+  const [cropSession, setCropSession] = useState(null);
 
-  const inmageHandle = (e) => {
-    const files = e.target.files;
-    const length = files.length;
+  useEffect(() => {
+    imageShowRef.current = imageShow;
+  }, [imageShow]);
 
-    if (length > 0) {
-      setImages([...images, ...files]);
-      const imageUrl = [];
+  useEffect(() => {
+    cropSessionRef.current = cropSession;
+  }, [cropSession]);
 
-      for (let i = 0; i < length; i++) {
-        imageUrl.push({ url: URL.createObjectURL(files[i]) });
-      }
-      setImageShow([...imageShow, ...imageUrl]);
+  useEffect(() => {
+    return () => {
+      revokeProductImagePreviews(imageShowRef.current);
+      revokeProductImagePreviews(cropSessionRef.current?.queue || []);
+    };
+  }, []);
+
+  const clearCropSession = () => {
+    revokeProductImagePreviews(cropSessionRef.current?.queue || []);
+    cropSessionRef.current = null;
+    setCropSession(null);
+  };
+
+  const startCropSession = async (fileList, mode, replaceIndex = null) => {
+    if (cropSessionRef.current) {
+      toast.error("Finish the current crop before selecting another image.");
+      return;
+    }
+
+    const { previews, errors } = await createProductImagePreviewBatch(fileList);
+
+    errors.forEach((error) => toast.error(error));
+
+    if (previews.length > 0) {
+      const nextSession = { mode, queue: previews, replaceIndex };
+      cropSessionRef.current = nextSession;
+      setCropSession(nextSession);
     }
   };
 
-  const changeImage = (img, index) => {
-    if (img) {
-      const tempUrl = imageShow;
-      const tempImages = images;
+  const inmageHandle = async (e) => {
+    await startCropSession(e.target.files, "append");
+    e.target.value = "";
+  };
 
-      tempImages[index] = img;
-      tempUrl[index] = { url: URL.createObjectURL(img) };
-      setImageShow([...tempUrl]);
-      setImages([...tempImages]);
+  const changeImage = async (fileList, index) => {
+    if (!fileList?.length) {
+      return;
     }
+
+    await startCropSession(fileList, "replace", index);
   };
 
   const removeImage = (i) => {
-    const filterImage = images.filter((img, index) => index !== i);
-    const filterImageUrl = imageShow.filter((img, index) => index !== i);
-    setImages(filterImage);
-    setImageShow(filterImageUrl);
+    setImages((currentImages) => currentImages.filter((_, index) => index !== i));
+    setImageShow((currentImages) => {
+      revokeProductImagePreview(currentImages[i]);
+      return currentImages.filter((_, index) => index !== i);
+    });
   };
 
   useEffect(() => {
@@ -143,6 +182,7 @@ const AddProduct = () => {
     formData.append("discount", state.discount);
     formData.append("shopName", userInfo?.shopInfo?.shopName);
     formData.append("brand", state.brand);
+    formData.append("imageBackground", getProductImageThemeBackground());
     for (let i = 0; i < images.length; i++) {
       formData.append("images", images[i]);
     }
@@ -168,6 +208,8 @@ const AddProduct = () => {
         brand: "",
         stock: "",
       });
+      revokeProductImagePreviews(imageShowRef.current);
+      imageShowRef.current = [];
       setImageShow([]);
       setImages([]);
       setCategory("");
@@ -182,6 +224,114 @@ const AddProduct = () => {
       if (redirectTimer) clearTimeout(redirectTimer);
     };
   }, [successMessage, errorMessage, shouldRedirect, dispatch, navigate]);
+
+  const imageWarningCount = imageShow.filter(
+    (image) => image.warnings?.length > 0,
+  ).length;
+  const activeCropItem = cropSession?.queue?.[0] || null;
+
+  const handleCropConfirm = async (croppedFile) => {
+    const currentSession = cropSessionRef.current;
+    const currentItem = currentSession?.queue?.[0];
+
+    if (!currentSession || !currentItem) {
+      return;
+    }
+
+    const croppedPreview = await buildCroppedProductImagePreview(
+      croppedFile,
+      currentItem,
+    );
+
+    if (
+      currentSession.mode === "replace" &&
+      Number.isInteger(currentSession.replaceIndex)
+    ) {
+      setImages((currentImages) => {
+        const nextImages = [...currentImages];
+        nextImages[currentSession.replaceIndex] = croppedFile;
+        return nextImages;
+      });
+
+      setImageShow((currentImages) => {
+        const nextImages = [...currentImages];
+        revokeProductImagePreview(nextImages[currentSession.replaceIndex]);
+        nextImages[currentSession.replaceIndex] = croppedPreview;
+        return nextImages;
+      });
+    } else {
+      setImages((currentImages) => [...currentImages, croppedFile]);
+      setImageShow((currentImages) => [...currentImages, croppedPreview]);
+    }
+
+    revokeProductImagePreview(currentItem);
+
+    const remainingQueue = currentSession.queue.slice(1);
+
+    if (remainingQueue.length > 0) {
+      const nextSession = {
+        ...currentSession,
+        queue: remainingQueue,
+      };
+      cropSessionRef.current = nextSession;
+      setCropSession(nextSession);
+      return;
+    }
+
+    cropSessionRef.current = null;
+    setCropSession(null);
+  };
+
+  const handleUseOriginal = async (originalFile) => {
+    const currentSession = cropSessionRef.current;
+    const currentItem = currentSession?.queue?.[0];
+
+    if (!currentSession || !currentItem || !originalFile) {
+      return;
+    }
+
+    const originalPreview = {
+      ...currentItem,
+      file: originalFile,
+      mode: "original",
+    };
+
+    if (
+      currentSession.mode === "replace" &&
+      Number.isInteger(currentSession.replaceIndex)
+    ) {
+      setImages((currentImages) => {
+        const nextImages = [...currentImages];
+        nextImages[currentSession.replaceIndex] = originalFile;
+        return nextImages;
+      });
+
+      setImageShow((currentImages) => {
+        const nextImages = [...currentImages];
+        revokeProductImagePreview(nextImages[currentSession.replaceIndex]);
+        nextImages[currentSession.replaceIndex] = originalPreview;
+        return nextImages;
+      });
+    } else {
+      setImages((currentImages) => [...currentImages, originalFile]);
+      setImageShow((currentImages) => [...currentImages, originalPreview]);
+    }
+
+    const remainingQueue = currentSession.queue.slice(1);
+
+    if (remainingQueue.length > 0) {
+      const nextSession = {
+        ...currentSession,
+        queue: remainingQueue,
+      };
+      cropSessionRef.current = nextSession;
+      setCropSession(nextSession);
+      return;
+    }
+
+    cropSessionRef.current = null;
+    setCropSession(null);
+  };
 
   return (
     <div className="px-2 lg:px-7 pt-5 pb-7">
@@ -377,20 +527,47 @@ const AddProduct = () => {
                   <FiImage />
                   Product Images
                 </h2>
+                <p className="mb-4 text-xs text-slate-400">
+                  {PRODUCT_IMAGE_HELPER_TEXT}
+                </p>
+
+                {imageWarningCount > 0 && (
+                  <div className="mb-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    {imageWarningCount} image(s) need careful framing before they are
+                    saved as square product images.
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
                   {imageShow.map((img, i) => (
-                    <div key={i} className="rounded-md overflow-hidden border border-slate-700 relative">
-                      <label className="h-[120px] block relative cursor-pointer" htmlFor={i.toString()}>
-                        <img className="h-full w-full object-cover" src={img.url} alt="product" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-all flex items-center justify-center text-xs text-white">
-                          Change Image
+                    <div
+                      key={img.id}
+                      className="relative overflow-hidden rounded-md border border-slate-700"
+                    >
+                      <label
+                        className="block cursor-pointer"
+                        htmlFor={`product-image-${img.id}`}
+                      >
+                        <div className="relative">
+                          <ProductImage
+                            alt={img.name}
+                            className="w-full"
+                            imgClassName="p-2"
+                            src={img.url}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white opacity-0 transition-all hover:opacity-100">
+                            Change Image
+                          </div>
                         </div>
                       </label>
                       <input
-                        onChange={(e) => changeImage(e.target.files[0], i)}
+                        onChange={(e) => {
+                          changeImage(e.target.files, i);
+                          e.target.value = "";
+                        }}
+                        accept={PRODUCT_IMAGE_ACCEPT}
                         type="file"
-                        id={i.toString()}
+                        id={`product-image-${img.id}`}
                         className="hidden"
                       />
                       <span
@@ -399,6 +576,27 @@ const AddProduct = () => {
                       >
                         <IoCloseSharp />
                       </span>
+                      <div className="space-y-1 border-t border-slate-700 bg-[#162235] p-2">
+                        <p className="truncate text-xs text-slate-300">{img.name}</p>
+                        {img.originalWidth && img.originalHeight && (
+                          <p className="text-[11px] text-slate-400">
+                            Original: {img.originalWidth} x {img.originalHeight}px
+                          </p>
+                        )}
+                        {img.outputWidth && img.outputHeight && (
+                          <p className="text-[11px] text-slate-400">
+                            Output: {img.outputWidth} x {img.outputHeight}px
+                          </p>
+                        )}
+                        <p className="text-[11px] text-slate-400">
+                          Mode: {img.mode === "cropped" ? "Square crop" : "Original fit"}
+                        </p>
+                        {img.warnings?.map((warning) => (
+                          <p key={`${img.id}-${warning}`} className="text-[11px] text-amber-300">
+                            {warning}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   ))}
 
@@ -409,7 +607,15 @@ const AddProduct = () => {
                     <BsImages />
                     <span className="text-xs">Select Image</span>
                   </label>
-                  <input multiple onChange={inmageHandle} name="images" className="hidden" type="file" id="image" />
+                  <input
+                    multiple
+                    accept={PRODUCT_IMAGE_ACCEPT}
+                    onChange={inmageHandle}
+                    name="images"
+                    className="hidden"
+                    type="file"
+                    id="image"
+                  />
                 </div>
               </div>
             </div>
@@ -432,6 +638,14 @@ const AddProduct = () => {
           </div>
         </form>
       </div>
+
+      <ProductImageCropModal
+        backgroundColor={getProductImageThemeBackground()}
+        image={activeCropItem}
+        onCancel={clearCropSession}
+        onConfirm={handleCropConfirm}
+        onSkip={handleUseOriginal}
+      />
     </div>
   );
 };

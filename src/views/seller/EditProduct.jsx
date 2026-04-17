@@ -13,6 +13,18 @@ import {
 } from "../../store/Reducers/productReducer";
 import JoditEditor from "jodit-react";
 import { overrideStyle } from "../../utils/utils";
+import ProductImage from "../../components/ProductImage";
+import ProductImageCropModal from "../../components/ProductImageCropModal";
+import {
+  PRODUCT_IMAGE_ACCEPT,
+  PRODUCT_IMAGE_HELPER_TEXT,
+  buildCroppedProductImagePreview,
+  createProductImagePreviewBatch,
+  createRemoteProductImagePreview,
+  getProductImageThemeBackground,
+  revokeProductImagePreview,
+  revokeProductImagePreviews,
+} from "../../utils/productImage";
 
 const EditProduct = () => {
   const editor = useRef(null);
@@ -77,22 +89,58 @@ const EditProduct = () => {
 
   const [imageShow, setImageShow] = useState([]);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const imageShowRef = useRef([]);
+  const cropSessionRef = useRef(null);
+  const [cropSession, setCropSession] = useState(null);
 
-  const changeImage = (img, files) => {
+  useEffect(() => {
+    imageShowRef.current = imageShow;
+  }, [imageShow]);
+
+  useEffect(() => {
+    cropSessionRef.current = cropSession;
+  }, [cropSession]);
+
+  useEffect(() => {
+    return () => {
+      revokeProductImagePreviews(imageShowRef.current);
+      revokeProductImagePreviews(cropSessionRef.current?.queue || []);
+    };
+  }, []);
+
+  const clearCropSession = () => {
+    revokeProductImagePreviews(cropSessionRef.current?.queue || []);
+    cropSessionRef.current = null;
+    setCropSession(null);
+  };
+
+  const startCropSession = async (fileList, replaceIndex) => {
+    if (cropSessionRef.current) {
+      toast.error("Finish the current crop before selecting another image.");
+      return;
+    }
+
+    const { previews, errors } = await createProductImagePreviewBatch(fileList);
+    errors.forEach((error) => toast.error(error));
+
+    if (previews.length > 0) {
+      const nextSession = { mode: "replace", queue: previews, replaceIndex };
+      cropSessionRef.current = nextSession;
+      setCropSession(nextSession);
+    }
+  };
+
+  const changeImage = async (files, index) => {
     if (isApproved) {
       toast.error("Approved product cannot be edited");
       return;
     }
-    if (files.length > 0) {
-      setShouldRedirect(true);
-      dispatch(
-        product_image_update({
-          oldImage: img,
-          newImage: files[0],
-          productId,
-        }),
-      );
+
+    if (!files?.length) {
+      return;
     }
+
+    await startCropSession(files, index);
   };
 
   useEffect(() => {
@@ -106,7 +154,12 @@ const EditProduct = () => {
     });
     setContent(product?.description || "");
     setCategory(product?.category || "");
-    setImageShow(product?.images || []);
+    setImageShow((currentImages) => {
+      revokeProductImagePreviews(currentImages);
+      return (product?.images || []).map((image, index) =>
+        createRemoteProductImagePreview(image, index),
+      );
+    });
   }, [product]);
 
   useEffect(() => {
@@ -121,6 +174,12 @@ const EditProduct = () => {
     if (errorMessage) {
       toast.error(errorMessage);
       dispatch(messageClear());
+      setImageShow((currentImages) => {
+        revokeProductImagePreviews(currentImages);
+        return (product?.images || []).map((image, index) =>
+          createRemoteProductImagePreview(image, index),
+        );
+      });
       setShouldRedirect(false);
     }
     if (successMessage) {
@@ -137,6 +196,97 @@ const EditProduct = () => {
       if (redirectTimer) clearTimeout(redirectTimer);
     };
   }, [successMessage, errorMessage, shouldRedirect, dispatch, navigate]);
+
+  const imageWarningCount = imageShow.filter(
+    (image) => image.warnings?.length > 0,
+  ).length;
+  const activeCropItem = cropSession?.queue?.[0] || null;
+
+  const handleCropConfirm = async (croppedFile) => {
+    const currentSession = cropSessionRef.current;
+    const currentItem = currentSession?.queue?.[0];
+    const replaceIndex = currentSession?.replaceIndex;
+
+    if (!currentSession || !currentItem || !Number.isInteger(replaceIndex)) {
+      return;
+    }
+
+    const currentPreview = imageShowRef.current[replaceIndex];
+    const oldImageUrl =
+      currentPreview?.serverUrl || product?.images?.[replaceIndex];
+
+    const croppedPreview = await buildCroppedProductImagePreview(croppedFile, {
+      ...currentItem,
+      serverUrl: oldImageUrl,
+    });
+
+    setImageShow((currentImages) => {
+      const nextImages = [...currentImages];
+      revokeProductImagePreview(nextImages[replaceIndex]);
+      nextImages[replaceIndex] = croppedPreview;
+      return nextImages;
+    });
+
+    revokeProductImagePreview(currentItem);
+    cropSessionRef.current = null;
+    setCropSession(null);
+
+    setShouldRedirect(true);
+    dispatch(
+      product_image_update({
+        oldImage: oldImageUrl,
+        newImage: croppedFile,
+        productId,
+        imageBackground: getProductImageThemeBackground(),
+      }),
+    );
+  };
+
+  const handleUseOriginal = async (originalFile) => {
+    const currentSession = cropSessionRef.current;
+    const currentItem = currentSession?.queue?.[0];
+    const replaceIndex = currentSession?.replaceIndex;
+
+    if (
+      !currentSession ||
+      !currentItem ||
+      !originalFile ||
+      !Number.isInteger(replaceIndex)
+    ) {
+      return;
+    }
+
+    const currentPreview = imageShowRef.current[replaceIndex];
+    const oldImageUrl =
+      currentPreview?.serverUrl || product?.images?.[replaceIndex];
+
+    const originalPreview = {
+      ...currentItem,
+      file: originalFile,
+      mode: "original",
+      serverUrl: oldImageUrl,
+    };
+
+    setImageShow((currentImages) => {
+      const nextImages = [...currentImages];
+      revokeProductImagePreview(nextImages[replaceIndex]);
+      nextImages[replaceIndex] = originalPreview;
+      return nextImages;
+    });
+
+    cropSessionRef.current = null;
+    setCropSession(null);
+
+    setShouldRedirect(true);
+    dispatch(
+      product_image_update({
+        oldImage: oldImageUrl,
+        newImage: originalFile,
+        productId,
+        imageBackground: getProductImageThemeBackground(),
+      }),
+    );
+  };
 
   const update = (e) => {
     e.preventDefault();
@@ -364,17 +514,34 @@ const EditProduct = () => {
                   <FiImage />
                   Product Images
                 </h2>
+                <p className="mb-4 text-xs text-slate-400">
+                  {PRODUCT_IMAGE_HELPER_TEXT}
+                </p>
+
+                {imageWarningCount > 0 && (
+                  <div className="mb-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    {imageWarningCount} replacement image(s) need careful framing
+                    before they are saved as square product images.
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
                   {imageShow &&
                     imageShow.length > 0 &&
                     imageShow.map((img, i) => (
-                      <div key={i} className="rounded-md overflow-hidden border border-slate-700">
+                      <div key={img.id} className="rounded-md overflow-hidden border border-slate-700">
                         <label
-                          className="h-[120px] block relative cursor-pointer"
-                          htmlFor={i.toString()}
+                          className="block relative cursor-pointer"
+                          htmlFor={`product-image-${img.id}`}
                         >
-                          <img className="h-full w-full object-cover" src={img} alt="product" />
+                          <div className="relative">
+                            <ProductImage
+                              alt={img.name}
+                              className="w-full"
+                              imgClassName="p-2"
+                              src={img.url}
+                            />
+                          </div>
                           {!isApproved && (
                             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-all flex items-center justify-center text-xs text-white">
                               Change Image
@@ -383,11 +550,36 @@ const EditProduct = () => {
                         </label>
                         <input
                           disabled={isApproved}
-                          onChange={(e) => changeImage(img, e.target.files)}
+                          accept={PRODUCT_IMAGE_ACCEPT}
+                          onChange={(e) => {
+                            changeImage(e.target.files, i);
+                            e.target.value = "";
+                          }}
                           type="file"
-                          id={i.toString()}
+                          id={`product-image-${img.id}`}
                           className="hidden"
                         />
+                        <div className="space-y-1 border-t border-slate-700 bg-[#162235] p-2">
+                          <p className="truncate text-xs text-slate-300">{img.name}</p>
+                          {img.originalWidth && img.originalHeight && (
+                            <p className="text-[11px] text-slate-400">
+                              Original: {img.originalWidth} x {img.originalHeight}px
+                            </p>
+                          )}
+                          {img.outputWidth && img.outputHeight && (
+                            <p className="text-[11px] text-slate-400">
+                              Output: {img.outputWidth} x {img.outputHeight}px
+                            </p>
+                          )}
+                          <p className="text-[11px] text-slate-400">
+                            Mode: {img.mode === "cropped" ? "Square crop" : "Original fit"}
+                          </p>
+                          {img.warnings?.map((warning) => (
+                            <p key={`${img.id}-${warning}`} className="text-[11px] text-amber-300">
+                              {warning}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     ))}
                 </div>
@@ -414,6 +606,14 @@ const EditProduct = () => {
           </div>
         </form>
       </div>
+
+      <ProductImageCropModal
+        backgroundColor={getProductImageThemeBackground()}
+        image={activeCropItem}
+        onCancel={clearCropSession}
+        onConfirm={handleCropConfirm}
+        onSkip={handleUseOriginal}
+      />
     </div>
   );
 };

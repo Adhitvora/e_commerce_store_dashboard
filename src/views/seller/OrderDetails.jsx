@@ -10,6 +10,7 @@ import {
     seller_delivery_status_update
 } from '../../store/Reducers/OrderReducer'
 import { formatDateTime } from '../../utils/dateFormatter'
+import ProductImage from '../../components/ProductImage'
 
 const DELIVERY_TRANSITIONS = {
     PENDING: ['PROCESSING'],
@@ -280,10 +281,11 @@ const OrderDetails = () => {
                                             key={i}
                                             className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-[#162235] p-4 sm:flex-row sm:items-center"
                                         >
-                                            <img
-                                                className="h-[84px] w-[84px] rounded-lg object-cover border border-slate-700"
-                                                src={p?.images?.[0]}
+                                            <ProductImage
                                                 alt={p?.name}
+                                                className="w-[84px] rounded-lg border border-slate-700"
+                                                imgClassName="p-2"
+                                                src={p?.images?.[0]}
                                             />
 
                                             <div className="min-w-0 flex-1">

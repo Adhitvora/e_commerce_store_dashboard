@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import Pagination from "../Pagination";
 import Search from "../components/Search";
+import ProductImage from "../../components/ProductImage";
 import {
   get_products,
   delete_product,
@@ -104,10 +105,11 @@ const Products = () => {
                     scope="row"
                     className="py-1 px-4 font-medium whitespace-nowrap"
                   >
-                    <img
-                      className="w-[45px] h-[45px]"
-                      src={d.images[0]}
-                      alt=""
+                    <ProductImage
+                      alt={d.name}
+                      className="w-[45px] rounded-md border border-slate-700"
+                      imgClassName="p-1"
+                      src={d.images?.[0]}
                     />
                   </td>
                   <td

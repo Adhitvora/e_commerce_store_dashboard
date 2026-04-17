@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { formatDateTime } from "../../utils/dateFormatter";
+import ProductImage from "../../components/ProductImage";
 
 const ProductDetailsModal = ({
   product,
@@ -35,27 +36,32 @@ const ProductDetailsModal = ({
           <div className="grid md:grid-cols-2 gap-4">
             {/* IMAGE SECTION */}
             <div>
-              <div className="bg-[#0f172a] rounded-lg h-[220px] flex items-center justify-center">
-                <img
-                  src={activeImage}
-                  alt=""
-                  className="max-h-full object-contain"
-                />
-              </div>
+              <ProductImage
+                alt={product.name}
+                className="w-full rounded-lg"
+                imgClassName="p-4"
+                src={activeImage}
+              />
 
               <div className="flex gap-2 mt-2 flex-wrap">
                 {product.images?.map((img, i) => (
-                  <img
+                  <button
                     key={i}
-                    src={img}
                     onClick={() => setActiveImage(img)}
-                    className={`w-14 h-14 object-cover rounded cursor-pointer border ${
+                    className={`rounded cursor-pointer border ${
                       activeImage === img
                         ? "border-green-500"
                         : "border-gray-600"
                     }`}
-                    alt=""
-                  />
+                    type="button"
+                  >
+                    <ProductImage
+                      alt={`${product.name} ${i + 1}`}
+                      className="w-14 rounded"
+                      imgClassName="p-1"
+                      src={img}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

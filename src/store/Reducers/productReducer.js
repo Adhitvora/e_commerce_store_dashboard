@@ -40,7 +40,7 @@ export const update_product = createAsyncThunk(
 
 export const product_image_update = createAsyncThunk(
     'product/product_image_update',
-    async ({ oldImage, newImage, productId }, { rejectWithValue, fulfillWithValue, getState }) => {
+    async ({ oldImage, newImage, productId, imageBackground }, { rejectWithValue, fulfillWithValue, getState }) => {
         const token = getState().auth.token
         const config = {
             headers: {
@@ -52,6 +52,7 @@ export const product_image_update = createAsyncThunk(
             formData.append('oldImage', oldImage)
             formData.append('newImage', newImage)
             formData.append('productId', productId)
+            formData.append('imageBackground', imageBackground)
             const { data } = await axios.post(`${api_url}/api/product-image-update`, formData, config)
             return fulfillWithValue(data)
         } catch (error) {
